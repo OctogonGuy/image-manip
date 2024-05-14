@@ -11,9 +11,9 @@
 #include <algorithm>
 #include <functional>
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "../lib/stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+#include "../lib/stb_image_write.h"
 using namespace std;
 
 class Pixel {
@@ -33,7 +33,7 @@ string get_destination_image_path();
 uint8_t *read_image(string, int &, int &, int &);
 void write_image(string, string, uint8_t *, int &, int &, int &);
 uint8_t *pixel_image(uint8_t *, int &, int &, int &);
-uint8_t *pixel_transform(uint8_t *, int &, int &, int &, function<void(Pixel&)> func);
+uint8_t *pixel_transform(uint8_t *, int &, int &, int &, function<void(Pixel&)>);
 uint8_t *grayscale_image(uint8_t *, int &, int &, int &);
 uint8_t *red_image(uint8_t *, int &, int &, int &);
 uint8_t *green_image(uint8_t *, int &, int &, int &);
@@ -42,6 +42,7 @@ uint8_t *blue_image(uint8_t *, int &, int &, int &);
 void trim(string &);
 void rtrim(string &);
 void ltrim(string &);
+bool equals_ignore_case(string, string);
 
 // Image quality
 const int QUALITY = 50; // 0 - 100
@@ -59,7 +60,7 @@ int main()
 	uint8_t *image = read_image(ref_path, width, height, bpp);
 
 	// Create data for pixel image
-	uint8_t *new_image = grayscale_image(image, width, height, bpp);
+	uint8_t *new_image = pixel_image(image, width, height, bpp);
 
 	// Free old image resources
 	stbi_image_free(image);
@@ -83,7 +84,7 @@ string get_reference_image_path()
 	string ref_path;
 
 	// Get user input for original image path
-	bool invalid_file = true;
+	bool invalid_file;
 	do
 	{
 		// Get user input
@@ -93,9 +94,14 @@ string get_reference_image_path()
 
 		// Check if invalid file type
 		string ext = ref_path.substr(ref_path.find_last_of(".") + 1);
-		if (find(begin(valid_exts), end(valid_exts), ext) != end(valid_exts))
-			invalid_file = false;
-		else
+		invalid_file = true;
+		for (string valid_ext : valid_exts) {
+			if (equals_ignore_case(ext, valid_ext)) {
+				invalid_file = false;
+				break;
+			}
+		}
+		if (invalid_file)
 			cout << "Invalid file type." << endl;
 	} while (invalid_file);
 
@@ -129,11 +135,11 @@ uint8_t *read_image(string old_image_path, int &width, int &height, int &bpp)
 void write_image(string ref_path, string dest_path, uint8_t *new_image, int &width, int &height, int &bpp)
 {
 	string ext = string(dest_path).substr(string(dest_path).find_last_of(".") + 1);
-	if (ext == "png")
+	if (equals_ignore_case(ext, "png"))
 		stbi_write_png(dest_path.c_str(), width, height, bpp, new_image, width * bpp);
-	else if (ext == "bmp")
+	else if (equals_ignore_case(ext, "bmp"))
 		stbi_write_bmp(dest_path.c_str(), width, height, bpp, new_image);
-	else if (ext == "jpg" || ext == "jpeg")
+	else if (equals_ignore_case(ext, "jpg") || equals_ignore_case(ext, "jpeg"))
 		stbi_write_jpg(dest_path.c_str(), width, height, bpp, new_image, QUALITY);
 }
 
@@ -156,8 +162,8 @@ uint8_t *pixel_image(uint8_t *image, int &width, int &height, int &bpp)
 	double chunk_height = height >= width ? chunk_length : double(height) / height_pixels;
 
 	// Create bit data for new image
-	unsigned int *rgb_totals = new unsigned int[chunks * bpp];
-	unsigned int *num_ref_px = new unsigned int[chunks];
+	int *rgb_totals = new int[chunks * bpp]();	// Parentheses initialize all elements with 0
+	int *num_ref_px = new int[chunks]();
 	for (int i = 0; i < height; i++)
 	{
 		for (int j = 0; j < width; j++)
@@ -219,6 +225,17 @@ void rtrim(string &s) {
     s.erase(find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
         return !isspace(ch) && ch != '"';
     }).base(), s.end());
+}
+
+bool equals_ignore_case(string str1, string str2)
+{
+    if (str1.length() != str2.length())
+        return false;
+    for (int i = 0; i < str1.length(); ++i) {
+        if (toupper(str1[i]) != toupper(str2[i]))
+            return false;
+    }
+    return true;
 }
 
 
