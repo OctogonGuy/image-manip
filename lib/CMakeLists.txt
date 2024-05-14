@@ -1,0 +1,1 @@
+add_library(lib INTERFACE stb_image.h stb_image_write.h)

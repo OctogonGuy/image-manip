@@ -33,4 +33,4 @@
 
 # --- Project-specific ---
 .vscode/
-bin/
+build/
