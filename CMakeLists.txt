@@ -5,7 +5,7 @@ add_executable(ImageManip src/main.cpp)
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 set(DIRS ${PROJECT_SOURCE_DIR}/lib ${PROJECT_SOURCE_DIR}/include)
 
-add_library(util STATIC  src/util.cpp)
+add_library(util STATIC src/util.cpp)
 target_include_directories(util PUBLIC ${DIRS})
 
 add_library(image_functions STATIC src/image_functions.cpp)

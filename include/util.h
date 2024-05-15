@@ -2,7 +2,7 @@
 #define UTIL_H
 
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 
 class Pixel {
 	public:
