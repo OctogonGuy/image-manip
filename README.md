@@ -1,1 +1,1 @@
-Create a pixelated image from a reference image
+Use this library of functions to create altered versions of images.
