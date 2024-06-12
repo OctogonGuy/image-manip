@@ -1,1 +1,0 @@
-Use this library of functions to create altered versions of images.
