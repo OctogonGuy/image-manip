@@ -103,11 +103,4 @@ std::uint8_t* read_image(const std::string& ref_path, int& width, int& height, i
 */
 void write_image(const std::string& out_path, const std::uint8_t* new_image, const int& width, const int& height, const int& bpp);
 
-
-/**
- * Removes an image from memory
- * @param image The image data
-*/
-void free_image(std::uint8_t* image);
-
 #endif

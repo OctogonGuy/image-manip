@@ -2,187 +2,164 @@
 #include <sstream>
 #include <map>
 #include <cstdint>
+#include <boost/program_options.hpp>
 #include "image_functions.h"
 #include "util.h"
 using namespace std;
+namespace po = boost::program_options;
 
-// Menu options
-const string sentinel = "q";
-const string help_cmd = "help";
-const string all_cmd = "all";
 
 // Valid file extentions
 const string valid_exts[4] = { "png", "bmp", "jpg", "jpeg" };
 
-// Map of image functions
-map<string, ImageFunction*> funcMap;
-void add_to_funcMap(const function<uint8_t* (uint8_t*, int&, int&, int&, string*)>& func,
-	const string& name, const string& desc, const initializer_list<string>& params) {
-	auto* image_function = new ImageFunction(func, name, desc, params);
-	funcMap[name] = image_function;
-}
-void create_vararg_functions() {
-	add_to_funcMap([](const uint8_t* image, const int& width, const int& height, const int& bpp, const string* args) {
-			return pixel_image(image, width, height, bpp, stoi(args[0]));
-		},
-		"pixel",
-		"Transforms an image into a pixelated version of itself",
-		{"The number of times the image will be divided on the longest side"});
-	add_to_funcMap([](const uint8_t* image, const int& width, const int& height, const int& bpp, const string* args) {
-			return grayscale_image(image, width, height, bpp);
-		},
-		"grayscale",
-		"Averages the colors of an image to make it grayscale",
-		{});
-	add_to_funcMap([](const uint8_t* image, const int& width, const int& height, const int& bpp, const string* args) {
-			return red_image(image, width, height, bpp);
-		},
-		"red",
-		"Removes all green and blue from an image",
-		{});
-	add_to_funcMap([](const uint8_t* image, const int& width, const int& height, const int& bpp, const string* args) {
-			return green_image(image, width, height, bpp);
-		},
-		"green",
-		"Removes all red and blue from an image",
-		{});
-	add_to_funcMap([](const uint8_t* image, const int& width, const int& height, const int& bpp, const string* args) {
-			return blue_image(image, width, height, bpp);
-		},
-		"blue",
-		"Removes all red and green from an image",
-		{});
-}
-// Performs all functions
-void do_all() {
 
-}
+int main(const int argc, const char* argv[]) {
+	// Stop execution if no arguments were provided
+	if (argc == 1) {
+		cout << "Please execute with options." << endl;
+		return 1;
+	}
 
-// Exit function
-int exit() {
-	cout << "Goodbye." << endl;
-	exit(0);
-}
+	int width, height, bpp;
+	string ref_path, out_path;
 
+	po::options_description general_desc("General options - Only one of these will be executed if given");
+	general_desc.add_options()
+		("help",
+			"Prints a list of options and their parameters")
+	;
 
-int main() {
-	string input;
+	po::options_description req_desc("Required options - You must include these if using an image function");
+	req_desc.add_options()
+		("ref",
+			po::value<string>()->value_name("path"),
+			"Reference image path")
+		("out",
+			po::value<string>()->value_name("path"),
+			"Output image path")
+	;
 
-	// Add vararg versions of functions to function map
-	create_vararg_functions();
+	po::options_description func_desc("Image functions - specify multiple to perform functions in given order");
+	func_desc.add_options()
+		("pixel",
+			po::value<int>()->value_name("divs"),
+			"Transforms an image into a pixelated version divided a number of times along the longest side")
+		("grayscale",
+			"Averages the colors of an image to make it grayscale")
+		("color",
+			po::value<string>()->value_name("hex"),
+			"Replaces all existing color with the corresponding shade of a new (hexidecimal) color")
+		("channels",
+			po::value<string>()->value_name("rgb"),
+			"Specify channels (r, g, and/or b) to enable in an image (do not separate with spaces or commas)")
+	;
+	/*
+	po::options_description desc("rotate functions");
+	desc.add_options()
+		("clockwise", "Enter the name of a function, ref img, out img, and parameters")
+		("counterclockwise", po::value<int>()->value_name("divs"), "Transforms an image into a pixelated version of itself")
+	;
 
-	// Print greeting
-	cout << "Welcome to the image manipulator." << endl;
-	cout << "Type '" << sentinel << "' at any time to quit." << endl;
+	po::options_description desc("reflect functions");
+	desc.add_options()
+		("horizontal", "Enter the name of a function, ref img, out img, and parameters")
+		("vertical", po::value<int>()->value_name("divs"), "Transforms an image into a pixelated version of itself")
+	;
+	*/
 
-	// Prompt for reference image path
-	bool invalid_file = true;
-	do {
-		cout << "Enter the path of the reference image:" << flush;
-		getline(cin, input);
+	po::options_description desc;
+	desc.add(general_desc).add(req_desc).add(func_desc);
+
+	po::variables_map vm;
+	store(parse_command_line(argc, argv, desc), vm);
+	notify(vm);
+
+	// Handle help
+	if (vm.count("help")) {
+		cout << desc << endl;
+		return 1;
+	}
+
+	// Get reference image path
+	if (vm.count("ref")) {
+		ref_path = vm["ref"].as<string>();
 		// Assert valid reference file type
-		const string ext = input.substr(input.find_last_of('.') + 1);
+		string ext = ref_path.substr(ref_path.find_last_of('.') + 1);
+		bool invalid_file = true;
 		for (const string& valid_ext : valid_exts) {
 			if (equals_ignore_case(ext, valid_ext)) {
 				invalid_file = false;
 				break;
 			}
 		}
-		if (equals_ignore_case(input, sentinel)) {
-			exit();
-		}
 		if (invalid_file) {
 			cout << "Invalid file type: " << ext << endl;
+			return 2;
 		}
-	} while (invalid_file);
-	const string ref_path = input;
-
-	// Prompt for output directory
-	cout << "Enter the output directory:";
-	getline(cin, input);
-	if (equals_ignore_case(input, sentinel)) {
-		exit();
+		// Remove argument from arguments
+		vm.erase("ref");
 	}
-	// Add slash to end of string if there is none already
-	if (input.back() != '/' && input.back() != '\\') {
-		if (input.find('/') != string::npos)
-			input += '/';
-		else
-			input += '\\';
+	// Quit the program if user did not provide reference image
+	else {
+		cout << "Please include a reference image path." << endl;
+			return 2;
 	}
-	const string out_dir = input;
 
-	// Prompt for function input
-	cout << "Enter the name of a function followed by the desired filename of the image and any parameters." << endl;
-	cout << "Type '" << help_cmd << "' for a list of all functions with a description and parameters." << endl;
-	cout << "Type '" << all_cmd << "' to perform all functions with default parameters." << endl;
+	// Get output image path
+	if (vm.count("out")) {
+		out_path = vm["out"].as<string>();
+		// Remove argument from arguments
+		vm.erase("out");
+	}
+	// Quit the program if user did not provide output image
+	else {
+		cout << "Please include an output image path." << endl;
+			return 2;
+	}
 
-	// Priming read
-	cout << ">>";
-	getline(cin, input);
-	// Menu loop
-	while (!equals_ignore_case(input, sentinel)) {
-		// Show help
-		if (equals_ignore_case(input, help_cmd)) {
-			for (const auto & it : funcMap) {
-				cout << it.second->helpStr() << endl;
-			}
+	// Read image
+	uint8_t* image = read_image(ref_path, width, height, bpp);
+	// Print read image confirmation message
+	cout << "Finished reading reference image." << endl;
+	// Initialize new image
+	uint8_t* new_image;
+
+	// Remove non-image function options
+	for (auto it = vm.begin(); it != vm.end(); ++it) {
+		string key = it->first;
+		if (key == "pixel") {
+			new_image = pixel_image(image, width, height, bpp, vm["pixel"].as<int>());
 		}
-		// Perform all functions
-		if (equals_ignore_case(input, all_cmd)) {
-			for (const auto & it : funcMap) {
-				// Read image
-				int width, height, bpp;
-				uint8_t* image = read_image(ref_path, width, height, bpp);
-				// Create data for pixel image
-				string out_path = out_dir + it.second->name + ".jpg";
-				string args[] = {"50"};
-				uint8_t* new_image = it.second->func(image, width, height, bpp, args);
-				// Free old image resources
-				free_image(image);
-				// Write new image
-				write_image(out_path, new_image, width, height, bpp);
-				// Free new image resources
-				free_image(new_image);
-				// Print completion confirmation message
-				cout << "Completed " + it.second->name + ". Output to: " << out_path << endl;
-			}
-			cout << "Finished writing all images." << endl;
+		else if (key == "grayscale") {
+			new_image = grayscale_image(image, width, height, bpp);
 		}
-		// Perform image function
+		else if (key == "color") {
+			const string hex = vm["color"].as<string>();
+			new_image = color_image(image, width, height, bpp, hex);
+		}
+		else if (key == "channels") {
+			const string channels = vm["channels"].as<string>();
+			const bool r = channels.find('r') != string::npos;
+			const bool g = channels.find('g') != string::npos;
+			const bool b = channels.find('b') != string::npos;
+			new_image = channel_image(image, width, height, bpp, r, g, b);
+		}
 		else {
-			// Parse arguments
-			vector<string> tokens = split(input);
-			string func_str = tokens[0];
-			string out_path = out_dir + tokens[1];
-			vector<string> args(tokens.begin() + 2, tokens.end());
-
-			// Read image
-			int width, height, bpp;
-			uint8_t* image = read_image(ref_path, width, height, bpp);
-			// Print image data
-			cout << "Reference path: " << ref_path << endl;
-			cout << "Output path: " << out_path << endl;
-			cout << "Width: " << width << " px" << endl;
-			cout << "Height: " << height << " px" << endl;
-			cout << "# of 8-bit components per pixel: " << bpp << endl;
-			// Create data for pixel image
-			uint8_t* new_image = funcMap[func_str]->func(image, width, height, bpp, &args[0]);
-			// Free old image resources
-			free_image(image);
-			// Write new image
-			write_image(out_path, new_image, width, height, bpp);
-			// Free new image resources
-			free_image(new_image);
-			// Print completion confirmation message
-			cout << "Finished writing image." << endl;
+			cout << "Please include a valid image function" << endl;
+			return 1;
 		}
 
-		// Get next input
-		cout << ">>";
-		getline(cin, input);
+		// Free old image resources
+		delete[] image;
+		// Replace old image reference with new image
+		image = new_image;
 	}
 
-	// Print closing message
-	exit();
+	// Write new image
+	write_image(out_path, new_image, width, height, bpp);
+	// Free new image resources
+	delete[] new_image;
+	// Print completion confirmation message
+	cout << "Finished writing output image." << endl;
+	return 0;
 }

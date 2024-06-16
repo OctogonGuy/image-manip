@@ -45,6 +45,34 @@ std::uint8_t* grayscale_image(const std::uint8_t* image, const int& width, const
 
 
 /**
+ * Enables and disables particular channels in an image
+ * @param image The image
+ * @param width The image's width
+ * @param height The image's height
+ * @param bpp # of bits per pixel
+ * @param r_enabled Whether the red channel is enabled
+ * @param g_enabled Whether the green channel is enabled
+ * @param b_enabled Whether the blue channel is enabled
+ * @return The output image
+ */
+uint8_t* channel_image(const uint8_t* image, const int& width, const int& height, const int& bpp,
+                       const bool& r_enabled, const bool& g_enabled, const bool& b_enabled);
+
+
+/**
+ * Replaces all existing color with the corresponding shade of a new color
+ * @param image The image
+ * @param width The image's width
+ * @param height The image's height
+ * @param bpp # of bits per pixel
+ * @param hex The desired color as a hexidecimal number
+ * @return The output image
+ */
+uint8_t* color_image(const uint8_t* image, const int& width, const int& height, const int& bpp,
+                     const std::string& hex);
+
+
+/**
  * Removes all green and blue from an image
  * @param image The image
  * @param width The image's width

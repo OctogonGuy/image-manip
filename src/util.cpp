@@ -7,7 +7,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-
 #include "stb_image_write.h"
 using namespace std;
 
@@ -77,11 +76,29 @@ vector<string> split(const string& str) {
 
 uint8_t* read_image(const string& ref_path, int& width, int& height, int& bpp) {
     uint8_t* image = stbi_load(ref_path.c_str(), &width, &height, &bpp, 0);
+    // Move to dynamically loaded array so it can be deleted with the delete[] keyword later
+    auto* new_image = new uint8_t[width * height * bpp];
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            // Index of pixel in original image
+            const int index = bpp * (j + i * width);
+            // RGB values of pixel
+            const uint8_t r = image[index];
+            const uint8_t g = image[index + 1];
+            const uint8_t b = image[index + 2];
+            // Perform operation on RGB
+            const auto pixel = Pixel(r, g, b);
+            new_image[index] = pixel.r;
+            new_image[index + 1] = pixel.g;
+            new_image[index + 2] = pixel.b;
+        }
+    }
+    stbi_image_free(image);
     // ... process data if not NULL ...
     // ... x = width, y = height, n = # 8-bit components per pixel ...
     // ... replace '0' with '1'..'4' to force that many components per pixel
     // ... but 'n' will always be the number that it would have been if you said 0
-    return image;
+    return new_image;
 }
 
 
@@ -117,9 +134,4 @@ string read_file(const string& filename) {
 
     // Return the file contents
     return sstr.str();
-}
-
-
-void free_image(uint8_t* image) {
-    stbi_image_free(image);
 }

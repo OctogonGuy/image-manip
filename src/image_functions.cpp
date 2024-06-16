@@ -3,6 +3,8 @@
 #include <functional>
 #include <cstdint>
 #include <cmath>
+#include <sstream>
+
 #include "util.h"
 using namespace std;
 
@@ -93,7 +95,33 @@ uint8_t* pixel_image(const uint8_t* image, const int& width, const int& height, 
 uint8_t* grayscale_image(const uint8_t* image, const int& width, const int& height, const int& bpp) {
 	const function<void(Pixel&)> lambda = [](Pixel& pixel) -> void {
 		pixel.g = pixel.r = pixel.b = (pixel.r + pixel.g + pixel.b) / 3;
-		};
+	};
+	return pixel_transform(image, width, height, bpp, lambda);
+}
+
+
+uint8_t* channel_image(const uint8_t* image, const int& width, const int& height, const int& bpp,
+	const bool& r_enabled, const bool& g_enabled, const bool& b_enabled) {
+	const function<void(Pixel&)> lambda = [r_enabled, g_enabled, b_enabled](Pixel& pixel) -> void {
+		if (!r_enabled) pixel.r = 0;
+		if (!g_enabled) pixel.g = 0;
+		if (!b_enabled) pixel.b = 0;
+	};
+	return pixel_transform(image, width, height, bpp, lambda);
+}
+
+
+uint8_t* color_image(const uint8_t* image, const int& width, const int& height, const int& bpp,
+	const string& hex_str) {
+	const function<void(Pixel&)> lambda = [hex_str](Pixel& pixel) -> void {
+		const uint8_t r = static_cast<uint8_t>(stoul(hex_str.substr(0, 2), nullptr, 16));
+		const uint8_t g = static_cast<uint8_t>(stoul(hex_str.substr(2, 2), nullptr, 16));
+		const uint8_t b = static_cast<uint8_t>(stoul(hex_str.substr(4, 2), nullptr, 16));
+		const int avg = (pixel.r + pixel.g + pixel.b) / 3;
+		pixel.r = static_cast<uint8_t>(round(avg * (r / 255.0)));
+		pixel.g = static_cast<uint8_t>(round(avg * (g / 255.0)));
+		pixel.b = static_cast<uint8_t>(round(avg * (b / 255.0)));
+	};
 	return pixel_transform(image, width, height, bpp, lambda);
 }
 
@@ -102,7 +130,7 @@ uint8_t* red_image(const uint8_t* image, const int& width, const int& height, co
 	const function<void(Pixel&)> lambda = [](Pixel& pixel) -> void {
 		pixel.r = (pixel.r + pixel.g + pixel.b) / 3;
 		pixel.g = pixel.b = 0;
-		};
+	};
 	return pixel_transform(image, width, height, bpp, lambda);
 }
 
@@ -111,7 +139,7 @@ uint8_t* green_image(const uint8_t* image, const int& width, const int& height, 
 	const function<void(Pixel&)> lambda = [](Pixel& pixel) -> void {
 		pixel.g = (pixel.r + pixel.g + pixel.b) / 3;
 		pixel.r = pixel.b = 0;
-		};
+	};
 	return pixel_transform(image, width, height, bpp, lambda);
 }
 
@@ -120,6 +148,6 @@ uint8_t* blue_image(const uint8_t* image, const int& width, const int& height, c
 	const function<void(Pixel&)> lambda = [](Pixel& pixel) -> void {
 		pixel.b = (pixel.r + pixel.g + pixel.b) / 3;
 		pixel.r = pixel.g = 0;
-		};
+	};
 	return pixel_transform(image, width, height, bpp, lambda);
 }
