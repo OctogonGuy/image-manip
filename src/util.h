@@ -3,6 +3,7 @@
 
 #include <string>
 #include <cstdint>
+#include <functional>
 #include <vector>
 
 /**
@@ -10,7 +11,7 @@
 */
 class Pixel {
 public:
-	std::uint8_t r;	// Red
+ std::uint8_t r;	// Red
 	std::uint8_t g;	// Green
 	std::uint8_t b;	// Blue
 
@@ -21,6 +22,38 @@ public:
 	 * @param b The blue value
 	*/
 	Pixel(std::uint8_t r, std::uint8_t g, std::uint8_t b);
+};
+
+
+/**
+ * Represents an image function
+*/
+class ImageFunction {
+public:
+ std::function<uint8_t* (uint8_t*, int&, int&, int&, std::string*)> func;	// The image function
+ std::string name;	// The name of the function
+ std::string desc;	// A description of the function
+ std::vector<std::string> params;	// Parameters of the function
+
+ /**
+  * Instantiates an image function
+  * @param func The image function
+  * @param name The name of the function
+  * @param desc A description of the function
+  * @param params Parameters of the function
+ */
+ ImageFunction(const std::function<uint8_t* (uint8_t*, int&, int&, int&, std::string*)>& func,
+  const std::string& name, const std::string& desc, const std::initializer_list<std::string>& params);
+
+ /**
+  * Destructor
+  */
+ virtual ~ImageFunction();
+
+ /**
+  * @return A string with the function's description and parameters.
+  */
+ std::string helpStr() const;
 };
 
 
@@ -39,6 +72,14 @@ bool equals_ignore_case(const std::string& str1, const std::string& str2);
  * @return The vector of strings
 */
 std::vector<std::string> split(const std::string& str);
+
+
+/**
+ * Reads a file and returns its contents as a string
+ * @param filename The file name
+ * @return The contents of the file as a string
+ */
+std::string read_file(const std::string& filename);
 
 
 /**
