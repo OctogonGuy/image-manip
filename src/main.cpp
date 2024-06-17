@@ -43,6 +43,8 @@ int main(const int argc, const char* argv[]) {
 			"Transforms an image into a pixelated version divided a number of times along the longest side")
 		("grayscale",
 			"Averages the colors of an image to make it grayscale")
+		("invert",
+			"Inverts the colors of the image")
 		("color",
 			po::value<string>()->value_name("hex"),
 			"Replaces all existing color with the corresponding shades of a new color")
@@ -101,6 +103,9 @@ int main(const int argc, const char* argv[]) {
 		}
 		else if (key == "grayscale") {
 			temp = grayscale(*image);
+		}
+		else if (key == "invert") {
+			temp = invert(*image);
 		}
 		else if (key == "color") {
 			const string hex = vm["color"].as<string>();

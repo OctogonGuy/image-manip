@@ -79,6 +79,17 @@ ImageMatrix* grayscale(const ImageMatrix& image) {
 }
 
 
+ImageMatrix* invert(const ImageMatrix& image) {
+	constexpr double matrix[] = {
+		-1,		0,		0,
+		0,		-1,		0,
+		0,		0,		-1,
+		255,	255,	255
+	};
+	return image.filter(matrix);
+}
+
+
 ImageMatrix* enable_channels(const ImageMatrix& image, const bool& r_on, const bool& g_on, const bool& b_on) {
 	const double r_bit = r_on ? 1 : 0;
 	const double g_bit = g_on ? 1 : 0;

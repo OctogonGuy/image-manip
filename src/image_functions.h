@@ -21,6 +21,14 @@ ImageMatrix* grayscale(const ImageMatrix& image);
 
 
 /**
+ * Inverts the colors of the image
+ * @param image The image
+ * @return The output image
+*/
+ImageMatrix* invert(const ImageMatrix& image);
+
+
+/**
  * Enables and disables particular channels in an image
  * @param image The image
  * @param r_on Whether the red channel is enabled
