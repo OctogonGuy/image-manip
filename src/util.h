@@ -3,13 +3,11 @@
 
 #include <string>
 #include <cstdint>
-#include <functional>
-#include <vector>
 
 /**
  * Represents a pixel with RGB data
 */
-class Pixel {
+class PixelData {
 public:
  std::uint8_t r;	// Red
 	std::uint8_t g;	// Green
@@ -21,65 +19,70 @@ public:
 	 * @param g The green value
 	 * @param b The blue value
 	*/
-	Pixel(std::uint8_t r, std::uint8_t g, std::uint8_t b);
+	PixelData(std::uint8_t r, std::uint8_t g, std::uint8_t b);
 };
 
 
 /**
- * Represents an image function
+ * Represents a matrix which represents an image
 */
-class ImageFunction {
+class ImageMatrix {
+ std::uint8_t* image_data; // Image data
+ int width; // The width of the image
+ int height; // The height of the image
+ int bpp; // bytes per pixel
+
 public:
- std::function<uint8_t* (uint8_t*, int&, int&, int&, std::string*)> func;	// The image function
- std::string name;	// The name of the function
- std::string desc;	// A description of the function
- std::vector<std::string> params;	// Parameters of the function
-
  /**
-  * Instantiates an image function
-  * @param func The image function
-  * @param name The name of the function
-  * @param desc A description of the function
-  * @param params Parameters of the function
- */
- ImageFunction(const std::function<uint8_t* (uint8_t*, int&, int&, int&, std::string*)>& func,
-  const std::string& name, const std::string& desc, const std::initializer_list<std::string>& params);
-
- /**
-  * Destructor
+  * Creates an empty image
+  * @param width The width of the image
+  * @param height The height of the image
+  * @param bpp Bytes per pixel
   */
- virtual ~ImageFunction();
+ ImageMatrix(const int& width, const int& height, const int& bpp);
 
  /**
-  * @return A string with the function's description and parameters.
+  * Creates a defined image
+  * @param image_data Bit data of the image
+  * @param width The width of the image
+  * @param height The height of the image
+  * @param bpp Bytes per pixel
   */
- std::string helpStr() const;
+ ImageMatrix(std::uint8_t* image_data, const int& width, const int& height, const int& bpp);
+
+ /**
+  * Deletes the image
+  */
+ virtual ~ImageMatrix();
+
+ std::uint8_t* getImageData() const { return image_data; }
+ int getWidth() const { return width; }
+ int getHeight() const { return height; }
+ int getBpp() const { return bpp; }
+
+ /**
+  * Returns the pixel data of the given entry in the image matrix
+  * @param row The row of the entry
+  * @param column The column of the entry
+  * @return The pixel data
+  */
+ PixelData get(const int& row, const int& column) const;
+
+ /**
+ * Sets the pixel data of the specified entry in the image matrix
+  * @param row The row of the entry
+  * @param column The column of the entry
+  * @param pixel_data The pixel data (byte data)
+  */
+ void set(const int& row, const int& column, const PixelData& pixel_data) const;
+
+ /**
+ * Performs a single operation on every pixel in an image
+ * @param matrix Multiplies the rgb components by the first three rows and adds the last row
+ * @return The output image
+*/
+ ImageMatrix* filter(const double* matrix) const;
 };
-
-
-/**
- * Compares two strings, ignoring capitalization
- * @param str1 A string
- * @param str2 A string
- * @return Whether the two strings are the same, ignoring case
-*/
-bool equals_ignore_case(const std::string& str1, const std::string& str2);
-
-
-/**
- * Splits a string into an vector of strings wherever whitespace is found except within quotes
- * @param str A string
- * @return The vector of strings
-*/
-std::vector<std::string> split(const std::string& str);
-
-
-/**
- * Reads a file and returns its contents as a string
- * @param filename The file name
- * @return The contents of the file as a string
- */
-std::string read_file(const std::string& filename);
 
 
 /**
@@ -88,19 +91,16 @@ std::string read_file(const std::string& filename);
  * @param width A reference to be overridden with the image's width
  * @param height A reference to be overridden with the image's height
  * @param bpp A reference to be overridden with the number of bits per pixel
- * @return The image data that was read
+ * @return The image matrix that was read
 */
-std::uint8_t* read_image(const std::string& ref_path, int& width, int& height, int& bpp);
+ImageMatrix* read_image(const std::string& ref_path, int& width, int& height, int& bpp);
 
 
 /**
  * Writes an image
  * @param out_path The destination path for the new image
  * @param new_image The new image
- * @param width The image's width
- * @param height The image's height
- * @param bpp # of bits per pixel
 */
-void write_image(const std::string& out_path, const std::uint8_t* new_image, const int& width, const int& height, const int& bpp);
+void write_image(const std::string& out_path, const ImageMatrix& new_image);
 
 #endif

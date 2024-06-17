@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.28)
 project(Image_Manipulator)
 
 set(CMAKE_CXX_STANDARD 11)
-FIND_PACKAGE( Boost 1.66.0 COMPONENTS program_options REQUIRED )
+FIND_PACKAGE( Boost 1.66.0 COMPONENTS program_options algorithm REQUIRED )
 INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIRS} )
 
 add_executable(Image_Manipulator src/main.cpp

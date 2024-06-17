@@ -1,6 +1,5 @@
 #include "image_functions.h"
 #include <iostream>
-#include <functional>
 #include <cstdint>
 #include <cmath>
 #include <sstream>
@@ -8,34 +7,11 @@
 #include "util.h"
 using namespace std;
 
-// --- Helper functions ---
-
-uint8_t* pixel_transform(const uint8_t* image, const int& width, const int& height, const int& bpp, const function<void(Pixel&)>& func) {
-	auto* new_image = new uint8_t[width * height * bpp];
-	for (int i = 0; i < height; i++) {
-		for (int j = 0; j < width; j++) {
-			// Index of pixel in original image
-			int index = bpp * (j + i * width);
-			// RGB values of pixel
-			const uint8_t r = image[index];
-			const uint8_t g = image[index + 1];
-			const uint8_t b = image[index + 2];
-			// Perform operation on RGB
-			Pixel pixel = Pixel(r, g, b);
-			func(pixel);
-			new_image[index] = pixel.r;
-			new_image[index + 1] = pixel.g;
-			new_image[index + 2] = pixel.b;
-		}
-	}
-	return new_image;
-}
-
-
-// --- Image manipulation functions ---
-
-uint8_t* pixel_image(const uint8_t* image, const int& width, const int& height, const int& bpp, const int& divs) {
+ImageMatrix* pixelate(const ImageMatrix& image, const int& divs) {
 	string input, new_path;
+	const int width = image.getWidth();
+	const int height = image.getHeight();
+	const int bpp = image.getBpp();
 
 	// Determine new image info
 	const int longest_side = width > height ? width : height;
@@ -59,7 +35,7 @@ uint8_t* pixel_image(const uint8_t* image, const int& width, const int& height, 
 			const int chunk_index = bpp * (chunk_col + chunk_row * width_pixels);
 			// Add RGB values
 			for (int k = 0; k < bpp; k++) {
-				rgb_totals[chunk_index + k] += image[index + k];
+				rgb_totals[chunk_index + k] += image.getImageData()[index + k];
 			}
 			num_ref_px[chunk_index / bpp]++;
 		}
@@ -88,66 +64,47 @@ uint8_t* pixel_image(const uint8_t* image, const int& width, const int& height, 
 	delete[] rgb_totals;
 	delete[] num_ref_px;
 
-	return new_image;
+	return new ImageMatrix(new_image, new_width, new_height, bpp);
 }
 
 
-uint8_t* grayscale_image(const uint8_t* image, const int& width, const int& height, const int& bpp) {
-	const function<void(Pixel&)> lambda = [](Pixel& pixel) -> void {
-		pixel.g = pixel.r = pixel.b = (pixel.r + pixel.g + pixel.b) / 3;
+ImageMatrix* grayscale(const ImageMatrix& image) {
+	constexpr double matrix[] = {
+		1.0/3.0,	1.0/3.0,	1.0/3.0,
+		1.0/3.0,	1.0/3.0,	1.0/3.0,
+		1.0/3.0,	1.0/3.0,	1.0/3.0,
+		0,			0,			0
 	};
-	return pixel_transform(image, width, height, bpp, lambda);
+	return image.filter(matrix);
 }
 
 
-uint8_t* channel_image(const uint8_t* image, const int& width, const int& height, const int& bpp,
-	const bool& r_enabled, const bool& g_enabled, const bool& b_enabled) {
-	const function<void(Pixel&)> lambda = [r_enabled, g_enabled, b_enabled](Pixel& pixel) -> void {
-		if (!r_enabled) pixel.r = 0;
-		if (!g_enabled) pixel.g = 0;
-		if (!b_enabled) pixel.b = 0;
+ImageMatrix* enable_channels(const ImageMatrix& image, const bool& r_on, const bool& g_on, const bool& b_on) {
+	const double r_bit = r_on ? 1 : 0;
+	const double g_bit = g_on ? 1 : 0;
+	const double b_bit = b_on ? 1 : 0;
+	const double matrix[] = {
+		r_bit,	0,		0,
+		0,		g_bit,	0,
+		0,		0,		b_bit,
+		0,		0,		0
 	};
-	return pixel_transform(image, width, height, bpp, lambda);
+	return image.filter(matrix);
 }
 
 
-uint8_t* color_image(const uint8_t* image, const int& width, const int& height, const int& bpp,
-	const string& hex_str) {
-	const function<void(Pixel&)> lambda = [hex_str](Pixel& pixel) -> void {
-		const uint8_t r = static_cast<uint8_t>(stoul(hex_str.substr(0, 2), nullptr, 16));
-		const uint8_t g = static_cast<uint8_t>(stoul(hex_str.substr(2, 2), nullptr, 16));
-		const uint8_t b = static_cast<uint8_t>(stoul(hex_str.substr(4, 2), nullptr, 16));
-		const int avg = (pixel.r + pixel.g + pixel.b) / 3;
-		pixel.r = static_cast<uint8_t>(round(avg * (r / 255.0)));
-		pixel.g = static_cast<uint8_t>(round(avg * (g / 255.0)));
-		pixel.b = static_cast<uint8_t>(round(avg * (b / 255.0)));
+ImageMatrix* color(const ImageMatrix& image, const string& hex) {
+	const double r_frac = static_cast<float>(static_cast<uint8_t>(
+		stoul(hex.substr(0, 2), nullptr, 16)) / 255.0);
+	const double g_frac = static_cast<float>(static_cast<uint8_t>(
+		stoul(hex.substr(2, 2), nullptr, 16)) / 255.0);
+	const double b_frac = static_cast<float>(static_cast<uint8_t>(
+		stoul(hex.substr(4, 2), nullptr, 16)) / 255.0);
+	const double matrix[] = {
+		r_frac/3.0,	g_frac/3.0,	b_frac/3.0,
+		r_frac/3.0,	g_frac/3.0,	g_frac/3.0,
+		r_frac/3.0,	g_frac/3.0,	b_frac/3.0,
+		0,			0,			0
 	};
-	return pixel_transform(image, width, height, bpp, lambda);
-}
-
-
-uint8_t* red_image(const uint8_t* image, const int& width, const int& height, const int& bpp) {
-	const function<void(Pixel&)> lambda = [](Pixel& pixel) -> void {
-		pixel.r = (pixel.r + pixel.g + pixel.b) / 3;
-		pixel.g = pixel.b = 0;
-	};
-	return pixel_transform(image, width, height, bpp, lambda);
-}
-
-
-uint8_t* green_image(const uint8_t* image, const int& width, const int& height, const int& bpp) {
-	const function<void(Pixel&)> lambda = [](Pixel& pixel) -> void {
-		pixel.g = (pixel.r + pixel.g + pixel.b) / 3;
-		pixel.r = pixel.b = 0;
-	};
-	return pixel_transform(image, width, height, bpp, lambda);
-}
-
-
-uint8_t* blue_image(const uint8_t* image, const int& width, const int& height, const int& bpp) {
-	const function<void(Pixel&)> lambda = [](Pixel& pixel) -> void {
-		pixel.b = (pixel.r + pixel.g + pixel.b) / 3;
-		pixel.r = pixel.g = 0;
-	};
-	return pixel_transform(image, width, height, bpp, lambda);
+	return image.filter(matrix);
 }

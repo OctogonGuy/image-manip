@@ -1,7 +1,6 @@
 #include <iostream>
 #include <sstream>
 #include <map>
-#include <cstdint>
 #include <boost/program_options.hpp>
 #include "image_functions.h"
 #include "util.h"
@@ -9,26 +8,24 @@ using namespace std;
 namespace po = boost::program_options;
 
 
-// Valid file extentions
-const string valid_exts[4] = { "png", "bmp", "jpg", "jpeg" };
-
-
 int main(const int argc, const char* argv[]) {
+	int width, height, bpp;
+	string ref_path, out_path;
+
 	// Stop execution if no arguments were provided
 	if (argc == 1) {
 		cout << "Please execute with options." << endl;
 		return 1;
 	}
 
-	int width, height, bpp;
-	string ref_path, out_path;
-
+	// --- Options ---
+	// General options
 	po::options_description general_desc("General options - Only one of these will be executed if given");
 	general_desc.add_options()
 		("help",
 			"Prints a list of options and their parameters")
 	;
-
+	// Required options
 	po::options_description req_desc("Required options - You must include these if using an image function");
 	req_desc.add_options()
 		("ref",
@@ -38,38 +35,25 @@ int main(const int argc, const char* argv[]) {
 			po::value<string>()->value_name("path"),
 			"Output image path")
 	;
-
+	// Image functions
 	po::options_description func_desc("Image functions - specify multiple to perform functions in given order");
 	func_desc.add_options()
-		("pixel",
+		("pixelate",
 			po::value<int>()->value_name("divs"),
 			"Transforms an image into a pixelated version divided a number of times along the longest side")
 		("grayscale",
 			"Averages the colors of an image to make it grayscale")
 		("color",
 			po::value<string>()->value_name("hex"),
-			"Replaces all existing color with the corresponding shade of a new (hexidecimal) color")
-		("channels",
+			"Replaces all existing color with the corresponding shades of a new color")
+		("enable-channels",
 			po::value<string>()->value_name("rgb"),
 			"Specify channels (r, g, and/or b) to enable in an image (do not separate with spaces or commas)")
 	;
-	/*
-	po::options_description desc("rotate functions");
-	desc.add_options()
-		("clockwise", "Enter the name of a function, ref img, out img, and parameters")
-		("counterclockwise", po::value<int>()->value_name("divs"), "Transforms an image into a pixelated version of itself")
-	;
-
-	po::options_description desc("reflect functions");
-	desc.add_options()
-		("horizontal", "Enter the name of a function, ref img, out img, and parameters")
-		("vertical", po::value<int>()->value_name("divs"), "Transforms an image into a pixelated version of itself")
-	;
-	*/
-
+	// Combine option categories
 	po::options_description desc;
 	desc.add(general_desc).add(req_desc).add(func_desc);
-
+	// Create map of parsed command line arguments
 	po::variables_map vm;
 	store(parse_command_line(argc, argv, desc), vm);
 	notify(vm);
@@ -77,34 +61,20 @@ int main(const int argc, const char* argv[]) {
 	// Handle help
 	if (vm.count("help")) {
 		cout << desc << endl;
-		return 1;
+		exit(1);
 	}
 
 	// Get reference image path
 	if (vm.count("ref")) {
 		ref_path = vm["ref"].as<string>();
-		// Assert valid reference file type
-		string ext = ref_path.substr(ref_path.find_last_of('.') + 1);
-		bool invalid_file = true;
-		for (const string& valid_ext : valid_exts) {
-			if (equals_ignore_case(ext, valid_ext)) {
-				invalid_file = false;
-				break;
-			}
-		}
-		if (invalid_file) {
-			cout << "Invalid file type: " << ext << endl;
-			return 2;
-		}
 		// Remove argument from arguments
 		vm.erase("ref");
 	}
 	// Quit the program if user did not provide reference image
 	else {
 		cout << "Please include a reference image path." << endl;
-			return 2;
+		exit(2);
 	}
-
 	// Get output image path
 	if (vm.count("out")) {
 		out_path = vm["out"].as<string>();
@@ -114,52 +84,47 @@ int main(const int argc, const char* argv[]) {
 	// Quit the program if user did not provide output image
 	else {
 		cout << "Please include an output image path." << endl;
-			return 2;
+		exit(2);
 	}
 
 	// Read image
-	uint8_t* image = read_image(ref_path, width, height, bpp);
+	ImageMatrix* image = read_image(ref_path, width, height, bpp);
 	// Print read image confirmation message
 	cout << "Finished reading reference image." << endl;
-	// Initialize new image
-	uint8_t* new_image;
 
-	// Remove non-image function options
+	// Go through parsed image functions
 	for (auto it = vm.begin(); it != vm.end(); ++it) {
+		ImageMatrix* temp;
 		string key = it->first;
-		if (key == "pixel") {
-			new_image = pixel_image(image, width, height, bpp, vm["pixel"].as<int>());
+		if (key == "pixelate") {
+			temp = pixelate(*image, vm["pixelate"].as<int>());
 		}
 		else if (key == "grayscale") {
-			new_image = grayscale_image(image, width, height, bpp);
+			temp = grayscale(*image);
 		}
 		else if (key == "color") {
 			const string hex = vm["color"].as<string>();
-			new_image = color_image(image, width, height, bpp, hex);
+			temp = color(*image, hex);
 		}
-		else if (key == "channels") {
-			const string channels = vm["channels"].as<string>();
+		else if (key == "enable-channels") {
+			const string channels = vm["enable-channels"].as<string>();
 			const bool r = channels.find('r') != string::npos;
 			const bool g = channels.find('g') != string::npos;
 			const bool b = channels.find('b') != string::npos;
-			new_image = channel_image(image, width, height, bpp, r, g, b);
+			temp = enable_channels(*image, r, g, b);
 		}
 		else {
 			cout << "Please include a valid image function" << endl;
-			return 1;
+			exit(1);
 		}
-
-		// Free old image resources
-		delete[] image;
-		// Replace old image reference with new image
-		image = new_image;
+		delete image;
+		image = temp;
 	}
 
-	// Write new image
-	write_image(out_path, new_image, width, height, bpp);
-	// Free new image resources
-	delete[] new_image;
+	// Write the output image
+	write_image(out_path, *image);
 	// Print completion confirmation message
 	cout << "Finished writing output image." << endl;
+
 	return 0;
 }
