@@ -90,6 +90,17 @@ ImageMatrix* invert(const ImageMatrix& image) {
 }
 
 
+ImageMatrix* sepia(const ImageMatrix& image) {
+	constexpr double matrix[] = {
+		0.393,	0.349,	0.272,
+		0.769,	0.686,	0.534,
+		0.189,	0.168,	0.131,
+		0,	0,	0
+	};
+	return image.filter(matrix);
+}
+
+
 ImageMatrix* enable_channels(const ImageMatrix& image, const bool& r_on, const bool& g_on, const bool& b_on) {
 	const double r_bit = r_on ? 1 : 0;
 	const double g_bit = g_on ? 1 : 0;
@@ -113,7 +124,7 @@ ImageMatrix* color(const ImageMatrix& image, const string& hex) {
 		stoul(hex.substr(4, 2), nullptr, 16)) / 255.0);
 	const double matrix[] = {
 		r_frac/3.0,	g_frac/3.0,	b_frac/3.0,
-		r_frac/3.0,	g_frac/3.0,	g_frac/3.0,
+		r_frac/3.0,	g_frac/3.0,	b_frac/3.0,
 		r_frac/3.0,	g_frac/3.0,	b_frac/3.0,
 		0,			0,			0
 	};

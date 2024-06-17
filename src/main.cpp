@@ -45,6 +45,8 @@ int main(const int argc, const char* argv[]) {
 			"Averages the colors of an image to make it grayscale")
 		("invert",
 			"Inverts the colors of the image")
+		("sepia",
+			"Adds a warm brown tone to the image")
 		("color",
 			po::value<string>()->value_name("hex"),
 			"Replaces all existing color with the corresponding shades of a new color")
@@ -106,6 +108,9 @@ int main(const int argc, const char* argv[]) {
 		}
 		else if (key == "invert") {
 			temp = invert(*image);
+		}
+		else if (key == "sepia") {
+			temp = sepia(*image);
 		}
 		else if (key == "color") {
 			const string hex = vm["color"].as<string>();

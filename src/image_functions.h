@@ -29,6 +29,14 @@ ImageMatrix* invert(const ImageMatrix& image);
 
 
 /**
+ * Adds a warm brown tone to the image
+ * @param image The image
+ * @return The output image
+*/
+ImageMatrix* sepia(const ImageMatrix& image);
+
+
+/**
  * Enables and disables particular channels in an image
  * @param image The image
  * @param r_on Whether the red channel is enabled

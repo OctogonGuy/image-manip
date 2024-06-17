@@ -75,9 +75,9 @@ ImageMatrix* ImageMatrix::filter(const double* matrix) const {
             const double r = pixel_data.r;
             const double g = pixel_data.g;
             const double b = pixel_data.b;
-            pixel_data.r = static_cast<uint8_t>(round(matrix[0]*r + matrix[3]*g + matrix[6]*b + matrix[9]));
-            pixel_data.g = static_cast<uint8_t>(round(matrix[1]*r + matrix[4]*g + matrix[7]*b + matrix[10]));
-            pixel_data.b = static_cast<uint8_t>(round(matrix[2]*r + matrix[5]*g + matrix[8]*b + matrix[11]));
+            pixel_data.r = static_cast<uint8_t>(min(255.0, round(matrix[0]*r + matrix[3]*g + matrix[6]*b + matrix[9])));
+            pixel_data.g = static_cast<uint8_t>(min(255.0, round(matrix[1]*r + matrix[4]*g + matrix[7]*b + matrix[10])));
+            pixel_data.b = static_cast<uint8_t>(min(255.0, round(matrix[2]*r + matrix[5]*g + matrix[8]*b + matrix[11])));
             new_image->set(i, j, pixel_data);
         }
     }
