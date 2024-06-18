@@ -70,10 +70,9 @@ ImageMatrix* pixelate(const ImageMatrix& image, const int& divs) {
 
 ImageMatrix* grayscale(const ImageMatrix& image) {
 	constexpr double matrix[] = {
-		1.0/3.0,	1.0/3.0,	1.0/3.0,
-		1.0/3.0,	1.0/3.0,	1.0/3.0,
-		1.0/3.0,	1.0/3.0,	1.0/3.0,
-		0,			0,			0
+		1.0/3.0,	1.0/3.0,	1.0/3.0,	0,
+		1.0/3.0,	1.0/3.0,	1.0/3.0,	0,
+		1.0/3.0,	1.0/3.0,	1.0/3.0,	0
 	};
 	return image.filter(matrix);
 }
@@ -81,10 +80,9 @@ ImageMatrix* grayscale(const ImageMatrix& image) {
 
 ImageMatrix* invert(const ImageMatrix& image) {
 	constexpr double matrix[] = {
-		-1,		0,		0,
-		0,		-1,		0,
-		0,		0,		-1,
-		255,	255,	255
+		-1,		0,		0,	255,
+		0,		-1,		0,	255,
+		0,		0,		-1,	255
 	};
 	return image.filter(matrix);
 }
@@ -92,10 +90,9 @@ ImageMatrix* invert(const ImageMatrix& image) {
 
 ImageMatrix* sepia(const ImageMatrix& image) {
 	constexpr double matrix[] = {
-		0.393,	0.349,	0.272,
-		0.769,	0.686,	0.534,
-		0.189,	0.168,	0.131,
-		0,	0,	0
+		0.393,	0.769,	0.189,	0,
+		0.349,	0.686,	0.168,	0,
+		0.272,	0.534,	0.131,	0
 	};
 	return image.filter(matrix);
 }
@@ -106,10 +103,9 @@ ImageMatrix* enable_channels(const ImageMatrix& image, const bool& r_on, const b
 	const double g_bit = g_on ? 1 : 0;
 	const double b_bit = b_on ? 1 : 0;
 	const double matrix[] = {
-		r_bit,	0,		0,
-		0,		g_bit,	0,
-		0,		0,		b_bit,
-		0,		0,		0
+		r_bit,	0,		0,		0,
+		0,		g_bit,	0,		0,
+		0,		0,		b_bit,	0
 	};
 	return image.filter(matrix);
 }
@@ -123,10 +119,9 @@ ImageMatrix* color(const ImageMatrix& image, const string& hex) {
 	const double b_frac = static_cast<float>(static_cast<uint8_t>(
 		stoul(hex.substr(4, 2), nullptr, 16)) / 255.0);
 	const double matrix[] = {
-		r_frac/3.0,	g_frac/3.0,	b_frac/3.0,
-		r_frac/3.0,	g_frac/3.0,	b_frac/3.0,
-		r_frac/3.0,	g_frac/3.0,	b_frac/3.0,
-		0,			0,			0
+		r_frac/3.0,	r_frac/3.0,	r_frac/3.0,	0,
+		g_frac/3.0,	g_frac/3.0,	g_frac/3.0,	0,
+		b_frac/3.0,	b_frac/3.0,	b_frac/3.0,	0
 	};
 	return image.filter(matrix);
 }
