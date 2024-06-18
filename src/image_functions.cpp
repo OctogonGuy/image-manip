@@ -68,6 +68,14 @@ ImageMatrix* pixelate(const ImageMatrix& image, const int& divs) {
 }
 
 
+ImageMatrix* box_blur(const ImageMatrix& image, const int& blursize) {
+	const int kernel_size = static_cast<int>(pow(2 * blursize + 1, 2));
+	double kernel[kernel_size];
+	fill_n(kernel, kernel_size, 1);
+	return image.convolve(kernel, kernel_size, 1.0/kernel_size);
+}
+
+
 ImageMatrix* grayscale(const ImageMatrix& image) {
 	constexpr double matrix[] = {
 		1.0/3.0,	1.0/3.0,	1.0/3.0,	0,

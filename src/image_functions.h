@@ -13,6 +13,15 @@ ImageMatrix* pixelate(const ImageMatrix& image, const int& divs);
 
 
 /**
+ * Averages each pixel's value with the value of its neighboring pixels
+ * @param image The image
+ * @param blursize 2 * blursize + 1 = Width and height of the kernel
+ * @return The output image
+ */
+ImageMatrix* box_blur(const ImageMatrix& image, const int& blursize);
+
+
+/**
  * Averages the colors of an image to make it grayscale.
  * @param image The image
  * @return The output image
