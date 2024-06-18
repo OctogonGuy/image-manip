@@ -82,6 +82,23 @@ public:
  * @return The output image
 */
  ImageMatrix* filter(const double* matrix) const;
+
+ /**
+ * Adds each element of the image to its local neighbors, weighted by the kernel
+ * @param kernel The kernel matrix
+ * @param kernel_size The length of the kernel array
+ * @return The output image
+*/
+ ImageMatrix* convolve(const double* kernel, const size_t& kernel_size) const;
+
+ /**
+ * Adds each element of the image to its local neighbors, weighted by the kernel
+ * @param kernel The kernel matrix
+ * @param kernel_size The length of the kernel array
+ * @param scalar A scalar by which to multiply the kernel
+ * @return The output image
+*/
+ ImageMatrix* convolve(const double* kernel, const size_t& kernel_size, const double& scalar) const;
 };
 
 

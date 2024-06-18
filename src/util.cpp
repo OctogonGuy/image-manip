@@ -85,9 +85,47 @@ ImageMatrix* ImageMatrix::filter(const double* matrix) const {
 }
 
 
+ImageMatrix* ImageMatrix::convolve(const double* kernel, const size_t& kernel_size) const {
+    return convolve(kernel, kernel_size, 1.0);
+}
+
+
+ImageMatrix* ImageMatrix::convolve(const double* kernel, const size_t& kernel_size, const double& scalar) const {
+    auto* new_image = new ImageMatrix(width, height, bpp);
+    const int kernel_rows = static_cast<int>(sqrt(kernel_size));
+    // Iterate through image matrix
+    for (int i = 0; i < getHeight(); i++) {
+        for (int j = 0; j < getWidth(); j++) {
+            // Iterate through the kernel
+            double r_total = 0.0;
+            double g_total = 0.0;
+            double b_total = 0.0;
+            for (int k = -kernel_rows/2; k <= kernel_rows/2; k++) {
+                for (int l = -kernel_rows/2; l <= kernel_rows/2; l++) {
+                    // Skip pixel if out of range
+                    if (i - k < 0 || i - k >= height || j - l < 0 || j - l >= width) {
+                        continue;
+                    }
+                    const double kernel_entry = kernel[(k + kernel_rows/2) * kernel_rows + (l + kernel_rows/2)];
+                    const PixelData pixel_data = get(i - k, j - l);
+                    r_total += pixel_data.r * kernel_entry * scalar;
+                    g_total += pixel_data.g * kernel_entry * scalar;
+                    b_total += pixel_data.b * kernel_entry * scalar;
+                }
+            }
+            const uint8_t r = static_cast<uint8_t>(min(255.0, round(r_total)));
+            const uint8_t g = static_cast<uint8_t>(min(255.0, round(g_total)));
+            const uint8_t b = static_cast<uint8_t>(min(255.0, round(b_total)));
+            new_image->set(i, j, PixelData(r, g, b));
+        }
+    }
+    return new_image;
+}
+
+
 ImageMatrix* read_image(const string& ref_path, int& width, int& height, int& bpp) {
     // Assert valid reference file type
-    string ext = ref_path.substr(ref_path.find_last_of('.') + 1);
+    const string ext = ref_path.substr(ref_path.find_last_of('.') + 1);
     bool invalid_file = true;
     for (const string& valid_ext : valid_exts) {
         if (boost::iequals(ext, valid_ext)) {
