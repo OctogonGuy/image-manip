@@ -68,6 +68,26 @@ ImageMatrix* pixelate(const ImageMatrix& image, const int& divs) {
 }
 
 
+ImageMatrix* outline(const ImageMatrix& image) {
+	constexpr double kernel[] = {
+		-1,	-1,	-1,
+		-1,	8,	-1,
+		-1,	-1,	-1
+	};
+	return image.convolve(kernel, sizeof(kernel)/sizeof(kernel[0]));
+}
+
+
+ImageMatrix* sharpen(const ImageMatrix& image) {
+	constexpr double kernel[] = {
+		0,	-1,	0,
+		-1,	5,	-1,
+		0,	-1,	0
+	};
+	return image.convolve(kernel, sizeof(kernel)/sizeof(kernel[0]));
+}
+
+
 ImageMatrix* box_blur(const ImageMatrix& image, const int& radius) {
 	const int kernel_size = static_cast<int>(pow(2 * radius + 1, 2));
 	double kernel[kernel_size];

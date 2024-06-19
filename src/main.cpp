@@ -41,6 +41,10 @@ int main(const int argc, const char* argv[]) {
 		("pixelate",
 			po::value<int>()->value_name("divs"),
 			"Transforms an image into a pixelated version divided a number of times along the longest side")
+		("outline",
+			"Highlights large differences in pixel values")
+		("sharpen",
+			"Emphasizes differences in adjacent pixel values")
 		("box-blur",
 			po::value<int>()->value_name("radius"),
 			"Averages each pixel's value with the value of its neighboring pixels")
@@ -109,11 +113,17 @@ int main(const int argc, const char* argv[]) {
 		if (key == "pixelate") {
 			temp = pixelate(*image, vm["pixelate"].as<int>());
 		}
+		else if (key == "outline") {
+			temp = outline(*image);
+		}
+		else if (key == "sharpen") {
+			temp = sharpen(*image);
+		}
 		else if (key == "box-blur") {
 			temp = box_blur(*image, vm["box-blur"].as<int>());
 		}
 		else if (key == "gaussian-blur") {
-			temp = box_blur(*image, vm["gaussian-blur"].as<int>());
+			temp = gaussian_blur(*image, vm["gaussian-blur"].as<int>());
 		}
 		else if (key == "grayscale") {
 			temp = grayscale(*image);

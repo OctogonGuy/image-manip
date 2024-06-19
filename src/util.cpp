@@ -75,9 +75,9 @@ ImageMatrix* ImageMatrix::filter(const double* matrix) const {
             const double r = pixel_data.r;
             const double g = pixel_data.g;
             const double b = pixel_data.b;
-            pixel_data.r = static_cast<uint8_t>(min(255.0, round(matrix[0]*r + matrix[1]*g + matrix[2]*b + matrix[3])));
-            pixel_data.g = static_cast<uint8_t>(min(255.0, round(matrix[4]*r + matrix[5]*g + matrix[6]*b + matrix[7])));
-            pixel_data.b = static_cast<uint8_t>(min(255.0, round(matrix[8]*r + matrix[9]*g + matrix[10]*b + matrix[11])));
+            pixel_data.r = static_cast<uint8_t>(round(matrix[0]*r + matrix[1]*g + matrix[2]*b + matrix[3]));
+            pixel_data.g = static_cast<uint8_t>(round(matrix[4]*r + matrix[5]*g + matrix[6]*b + matrix[7]));
+            pixel_data.b = static_cast<uint8_t>(round(matrix[8]*r + matrix[9]*g + matrix[10]*b + matrix[11]));
             new_image->set(i, j, pixel_data);
         }
     }
@@ -114,9 +114,9 @@ ImageMatrix* ImageMatrix::convolve(const double* kernel, const size_t& kernel_si
                     b_total += pixel_data.b * kernel_entry * scalar;
                 }
             }
-            const uint8_t r = static_cast<uint8_t>(min(255.0, round(r_total)));
-            const uint8_t g = static_cast<uint8_t>(min(255.0, round(g_total)));
-            const uint8_t b = static_cast<uint8_t>(min(255.0, round(b_total)));
+            const uint8_t r = static_cast<uint8_t>(max(0.0, min(255.0, round(r_total))));
+            const uint8_t g = static_cast<uint8_t>(max(0.0, min(255.0, round(g_total))));
+            const uint8_t b = static_cast<uint8_t>(max(0.0, min(255.0, round(b_total))));
             new_image->set(i, j, PixelVector(r, g, b));
         }
     }

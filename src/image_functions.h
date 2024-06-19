@@ -13,6 +13,22 @@ ImageMatrix* pixelate(const ImageMatrix& image, const int& divs);
 
 
 /**
+ * Highlights large differences in pixel values
+ * @param image The image
+ * @return The output image
+ */
+ImageMatrix* outline(const ImageMatrix& image);
+
+
+/**
+ * Emphasizes differences in adjacent pixel values
+ * @param image The image
+ * @return The output image
+ */
+ImageMatrix* sharpen(const ImageMatrix& image);
+
+
+/**
  * Averages each pixel's value with the value of its neighboring pixels
  * @param image The image
  * @param radius 2 * radius + 1 = Width and height of the kernel
