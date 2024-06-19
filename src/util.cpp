@@ -16,7 +16,7 @@ constexpr int QUALITY = 50; // JPG Image quality | 0 - 100
 const string valid_exts[4] = { "png", "bmp", "jpg", "jpeg" };   // Valid file extentions
 
 
-PixelData::PixelData(const uint8_t r, const uint8_t g, const uint8_t b) {
+PixelVector::PixelVector(const uint8_t r, const uint8_t g, const uint8_t b) {
     this->r = r;
     this->g = g;
     this->b = b;
@@ -45,7 +45,7 @@ ImageMatrix::~ImageMatrix() {
 }
 
 
-PixelData ImageMatrix::get(const int& row, const int& column) const {
+PixelVector ImageMatrix::get(const int& row, const int& column) const {
     // Index of pixel in original image
     const int index = bpp * (column + row * width);
     // RGB values of pixel
@@ -57,7 +57,7 @@ PixelData ImageMatrix::get(const int& row, const int& column) const {
 }
 
 
-void ImageMatrix::set(const int& row, const int& column, const PixelData& pixel_data) const {
+void ImageMatrix::set(const int& row, const int& column, const PixelVector& pixel_data) const {
     // Index of pixel in original image
     const int index = bpp * (column + row * width);
     // Set the byte values
@@ -71,7 +71,7 @@ ImageMatrix* ImageMatrix::filter(const double* matrix) const {
     auto* new_image = new ImageMatrix(width, height, bpp);
     for (int i = 0; i < getHeight(); i++) {
         for (int j = 0; j < getWidth(); j++) {
-            PixelData pixel_data = get(i, j);
+            PixelVector pixel_data = get(i, j);
             const double r = pixel_data.r;
             const double g = pixel_data.g;
             const double b = pixel_data.b;
@@ -107,7 +107,7 @@ ImageMatrix* ImageMatrix::convolve(const double* kernel, const size_t& kernel_si
                         continue;
                     }
                     const double kernel_entry = kernel[(k + kernel_rows/2) * kernel_rows + (l + kernel_rows/2)];
-                    const PixelData pixel_data = get(i - k, j - l);
+                    const PixelVector pixel_data = get(i - k, j - l);
                     r_total += pixel_data.r * kernel_entry * scalar;
                     g_total += pixel_data.g * kernel_entry * scalar;
                     b_total += pixel_data.b * kernel_entry * scalar;
@@ -116,7 +116,7 @@ ImageMatrix* ImageMatrix::convolve(const double* kernel, const size_t& kernel_si
             const uint8_t r = static_cast<uint8_t>(min(255.0, round(r_total)));
             const uint8_t g = static_cast<uint8_t>(min(255.0, round(g_total)));
             const uint8_t b = static_cast<uint8_t>(min(255.0, round(b_total)));
-            new_image->set(i, j, PixelData(r, g, b));
+            new_image->set(i, j, PixelVector(r, g, b));
         }
     }
     return new_image;
@@ -149,7 +149,7 @@ ImageMatrix* read_image(const string& ref_path, int& width, int& height, int& bp
             const uint8_t r = image[index];
             const uint8_t g = image[index + 1];
             const uint8_t b = image[index + 2];
-            const auto pixel = PixelData(r, g, b);
+            const auto pixel = PixelVector(r, g, b);
             new_image[index] = pixel.r;
             new_image[index + 1] = pixel.g;
             new_image[index + 2] = pixel.b;

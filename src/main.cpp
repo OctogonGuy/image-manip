@@ -42,7 +42,7 @@ int main(const int argc, const char* argv[]) {
 			po::value<int>()->value_name("divs"),
 			"Transforms an image into a pixelated version divided a number of times along the longest side")
 		("box-blur",
-			po::value<int>()->value_name("blursize"),
+			po::value<int>()->value_name("radius"),
 			"Averages each pixel's value with the value of its neighboring pixels")
 		("grayscale",
 			"Averages the colors of an image to make it grayscale")

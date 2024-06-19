@@ -7,7 +7,7 @@
 /**
  * Represents a pixel with RGB data
 */
-class PixelData {
+class PixelVector {
 public:
  std::uint8_t r;	// Red
 	std::uint8_t g;	// Green
@@ -19,7 +19,7 @@ public:
 	 * @param g The green value
 	 * @param b The blue value
 	*/
-	PixelData(std::uint8_t r, std::uint8_t g, std::uint8_t b);
+	PixelVector(std::uint8_t r, std::uint8_t g, std::uint8_t b);
 };
 
 
@@ -66,7 +66,7 @@ public:
   * @param column The column of the entry
   * @return The pixel data
   */
- PixelData get(const int& row, const int& column) const;
+ PixelVector get(const int& row, const int& column) const;
 
  /**
  * Sets the pixel data of the specified entry in the image matrix
@@ -74,7 +74,7 @@ public:
   * @param column The column of the entry
   * @param pixel_data The pixel data (byte data)
   */
- void set(const int& row, const int& column, const PixelData& pixel_data) const;
+ void set(const int& row, const int& column, const PixelVector& pixel_data) const;
 
  /**
  * Performs a single operation on every pixel in an image
