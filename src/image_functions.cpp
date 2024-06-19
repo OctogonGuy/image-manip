@@ -76,6 +76,21 @@ ImageMatrix* box_blur(const ImageMatrix& image, const int& radius) {
 }
 
 
+ImageMatrix* gaussian_blur(const ImageMatrix& image, const int& radius) {
+	const int kernel_size = static_cast<int>(pow(2 * radius + 1, 2));
+	const int kernel_rows = 2*radius + 1;
+	constexpr double sigma = 0.3;
+	double kernel[kernel_size];
+	for (int i = -radius; i <= radius; i++) {
+		for (int j = -radius; j <= radius; j++) {
+			const int index = (i + radius) * kernel_rows + (j + radius);
+			kernel[index] = 1 / (2 * M_PI * pow(sigma, 2)) * pow(M_E, -((pow(j, 2) + pow(i, 2)) / (2 * pow(sigma, 2))));
+		}
+	}
+	return image.convolve(kernel, kernel_size, 1.0/pow(16, radius));
+}
+
+
 ImageMatrix* grayscale(const ImageMatrix& image) {
 	constexpr double matrix[] = {
 		1.0/3.0,	1.0/3.0,	1.0/3.0,	0,

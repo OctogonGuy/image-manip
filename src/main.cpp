@@ -44,6 +44,9 @@ int main(const int argc, const char* argv[]) {
 		("box-blur",
 			po::value<int>()->value_name("radius"),
 			"Averages each pixel's value with the value of its neighboring pixels")
+		("gaussian-blur",
+			po::value<int>()->value_name("radius"),
+			"Blurs the image by a Gaussian function")
 		("grayscale",
 			"Averages the colors of an image to make it grayscale")
 		("invert",
@@ -108,6 +111,9 @@ int main(const int argc, const char* argv[]) {
 		}
 		else if (key == "box-blur") {
 			temp = box_blur(*image, vm["box-blur"].as<int>());
+		}
+		else if (key == "gaussian-blur") {
+			temp = box_blur(*image, vm["gaussian-blur"].as<int>());
 		}
 		else if (key == "grayscale") {
 			temp = grayscale(*image);

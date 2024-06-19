@@ -22,6 +22,15 @@ ImageMatrix* box_blur(const ImageMatrix& image, const int& radius);
 
 
 /**
+ * Blurs the image by a Gaussian function
+ * @param image The image
+ * @param radius 2 * radius + 1 = Width and height of the kernel
+ * @return The output image
+ */
+ImageMatrix* gaussian_blur(const ImageMatrix& image, const int& radius);
+
+
+/**
  * Averages the colors of an image to make it grayscale.
  * @param image The image
  * @return The output image

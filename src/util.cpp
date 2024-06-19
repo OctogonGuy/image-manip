@@ -93,6 +93,7 @@ ImageMatrix* ImageMatrix::convolve(const double* kernel, const size_t& kernel_si
 ImageMatrix* ImageMatrix::convolve(const double* kernel, const size_t& kernel_size, const double& scalar) const {
     auto* new_image = new ImageMatrix(width, height, bpp);
     const int kernel_rows = static_cast<int>(sqrt(kernel_size));
+    const int kernel_radius = kernel_rows / 2;
     // Iterate through image matrix
     for (int i = 0; i < getHeight(); i++) {
         for (int j = 0; j < getWidth(); j++) {
@@ -100,13 +101,13 @@ ImageMatrix* ImageMatrix::convolve(const double* kernel, const size_t& kernel_si
             double r_total = 0.0;
             double g_total = 0.0;
             double b_total = 0.0;
-            for (int k = -kernel_rows/2; k <= kernel_rows/2; k++) {
-                for (int l = -kernel_rows/2; l <= kernel_rows/2; l++) {
+            for (int k = -kernel_radius; k <= kernel_radius; k++) {
+                for (int l = -kernel_radius; l <= kernel_radius; l++) {
                     // Skip pixel if out of range
                     if (i - k < 0 || i - k >= height || j - l < 0 || j - l >= width) {
                         continue;
                     }
-                    const double kernel_entry = kernel[(k + kernel_rows/2) * kernel_rows + (l + kernel_rows/2)];
+                    const double kernel_entry = kernel[(k + kernel_radius) * kernel_rows + (l + kernel_radius)];
                     const PixelVector pixel_data = get(i - k, j - l);
                     r_total += pixel_data.r * kernel_entry * scalar;
                     g_total += pixel_data.g * kernel_entry * scalar;
