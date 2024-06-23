@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.28)
-project(Image_Manipulator)
+project(Image_Processor)
 
 set(CMAKE_CXX_STANDARD 11)
-FIND_PACKAGE( Boost 1.66.0 COMPONENTS program_options algorithm REQUIRED )
+
+FIND_PACKAGE( Boost 1.66.0 COMPONENTS program_options REQUIRED )
 INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIRS} )
 
-add_executable(Image_Manipulator src/main.cpp
+add_executable(Image_Processor src/main.cpp
         src/util.cpp
         src/util.h
         src/image_functions.cpp
@@ -13,4 +14,5 @@ add_executable(Image_Manipulator src/main.cpp
 )
 include_directories(Image_Manipulator, lib)
 
-TARGET_LINK_LIBRARIES( Image_Manipulator LINK_PUBLIC ${Boost_LIBRARIES} )
+TARGET_LINK_LIBRARIES( Image_Processor LINK_PUBLIC ${Boost_LIBRARIES} )
+target_link_libraries(Image_Processor PRIVATE Boost::headers)
