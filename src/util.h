@@ -51,6 +51,12 @@ public:
  ImageMatrix(std::uint8_t* image_data, const int& width, const int& height, const int& bpp);
 
  /**
+  * Makes a copy from another image matrix
+  * @param image The object to copy
+  */
+ ImageMatrix(const ImageMatrix& image);
+
+ /**
   * Deletes the image
   */
  virtual ~ImageMatrix();

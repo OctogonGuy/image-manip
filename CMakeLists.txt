@@ -3,7 +3,7 @@ project(Image_Processor)
 
 set(CMAKE_CXX_STANDARD 11)
 
-FIND_PACKAGE( Boost 1.66.0 COMPONENTS program_options REQUIRED )
+find_package(Boost 1.66.0 REQUIRED)
 INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIRS} )
 
 add_executable(Image_Processor src/main.cpp

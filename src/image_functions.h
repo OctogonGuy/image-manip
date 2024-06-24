@@ -41,9 +41,10 @@ ImageMatrix* box_blur(const ImageMatrix& image, const int& radius);
  * Blurs the image by a Gaussian function
  * @param image The image
  * @param radius 2 * radius + 1 = Width and height of the kernel
+ * @param sigma The standard deviation of the Gaussian distribution
  * @return The output image
  */
-ImageMatrix* gaussian_blur(const ImageMatrix& image, const int& radius);
+ImageMatrix* gaussian_blur(const ImageMatrix& image, const int& radius, const double& sigma);
 
 
 /**
@@ -84,7 +85,7 @@ ImageMatrix* enable_channels(const ImageMatrix& image, const bool& r_on, const b
 /**
  * Replaces all existing color with the corresponding shade of a new color
  * @param image The image
- * @param hex The desired color as a hexidecimal number
+ * @param hex The desired color as a hexidecimal value
  * @return The output image
  */
 ImageMatrix* color(const ImageMatrix& image, const std::string& hex);

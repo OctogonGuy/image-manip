@@ -1,160 +1,176 @@
 #include <iostream>
 #include <sstream>
-#include <map>
-#include <boost/program_options.hpp>
 #include "image_functions.h"
 #include "util.h"
+#include "CLI11.hpp"
 using namespace std;
-namespace po = boost::program_options;
 
 
-int main(const int argc, const char* argv[]) {
+int main(int argc, char** argv) {
 	int width, height, bpp;
 	string ref_path, out_path;
 
-	// Stop execution if no arguments were provided
-	if (argc == 1) {
-		cout << "Please execute with options." << endl;
-		return 1;
-	}
 
-	// --- Options ---
-	// General options
-	po::options_description general_desc("General options - Only one of these will be executed if given");
-	general_desc.add_options()
-		("help",
-			"Prints a list of options and their parameters")
-	;
-	// Required options
-	po::options_description req_desc("Required options - You must include these if using an image function");
-	req_desc.add_options()
-		("ref",
-			po::value<string>()->value_name("path"),
-			"Reference image path")
-		("out",
-			po::value<string>()->value_name("path"),
-			"Output image path")
-	;
-	// Image functions
-	po::options_description func_desc("Image functions - specify multiple to perform functions in given order");
-	func_desc.add_options()
-		("pixelate",
-			po::value<int>()->value_name("divs"),
-			"Transforms an image into a pixelated version divided a number of times along the longest side")
-		("outline",
-			"Highlights large differences in pixel values")
-		("sharpen",
-			"Emphasizes differences in adjacent pixel values")
-		("box-blur",
-			po::value<int>()->value_name("radius"),
-			"Averages each pixel's value with the value of its neighboring pixels")
-		("gaussian-blur",
-			po::value<int>()->value_name("radius"),
-			"Blurs the image by a Gaussian function")
-		("grayscale",
-			"Averages the colors of an image to make it grayscale")
-		("invert",
-			"Inverts the colors of the image")
-		("sepia",
-			"Adds a warm brown tone to the image")
-		("color",
-			po::value<string>()->value_name("hex"),
-			"Replaces all existing color with the corresponding shades of a new color")
-		("enable-channels",
-			po::value<string>()->value_name("rgb"),
-			"Specify channels (r, g, and/or b) to enable in an image (do not separate with spaces or commas)")
-	;
-	// Combine option categories
-	po::options_description desc;
-	desc.add(general_desc).add(req_desc).add(func_desc);
-	// Create map of parsed command line arguments
-	po::variables_map vm;
-	store(parse_command_line(argc, argv, desc), vm);
-	notify(vm);
 
-	// Handle help
-	if (vm.count("help")) {
-		cout << desc << endl;
-		exit(1);
-	}
+	// Initialize CLI App
+    CLI::App app{"App description"};
+	app.require_subcommand();
+	argv = app.ensure_utf8(argv);
 
-	// Get reference image path
-	if (vm.count("ref")) {
-		ref_path = vm["ref"].as<string>();
-		// Remove argument from arguments
-		vm.erase("ref");
-	}
-	// Quit the program if user did not provide reference image
-	else {
-		cout << "Please include a reference image path." << endl;
-		exit(2);
-	}
-	// Get output image path
-	if (vm.count("out")) {
-		out_path = vm["out"].as<string>();
-		// Remove argument from arguments
-		vm.erase("out");
-	}
-	// Quit the program if user did not provide output image
-	else {
-		cout << "Please include an output image path." << endl;
-		exit(2);
-	}
+
+
+	// --- Options for whole program ---
+
+	app.add_option("--ref", ref_path,
+		"Reference image path")->required();
+	app.add_option("--out", out_path,
+		"Output image path")->required();
+
+
+
+	// --- Commands and their respective options ---
+
+    app.add_subcommand("pixelate",
+    	"Transforms an image into a pixelated version");
+	int pixelate_divs{100};
+    app.get_subcommand("pixelate")->add_option("--divs", pixelate_divs,
+        "description");
+
+    app.add_subcommand("outline",
+    	"Highlights large differences in pixel values");
+
+	app.add_subcommand("sharpen",
+		"Emphasizes differences in adjacent pixel values");
+
+    app.add_subcommand("box-blur",
+		"Averages each pixel's value with the value of its neighboring pixels");
+	int box_blur_radius{1};
+	app.get_subcommand("box-blur")->add_option("--radius", box_blur_radius,
+	"Radius of the kernel")
+	->check(CLI::Range(1, 5));
+
+	app.add_subcommand("gaussian-blur",
+		"Blurs the image by a Gaussian function");
+	int gaussian_blur_radius{1};
+	app.get_subcommand("gaussian-blur")->add_option("--radius", gaussian_blur_radius,
+	"Radius of the kernel")
+	->check(CLI::Range(1, 5));
+	double gaussian_blur_sigma{0.3};
+	app.get_subcommand("gaussian-blur")->add_option("--sigma", gaussian_blur_sigma,
+		"Standard deviation of the Gaussian distribution")
+	->check(CLI::Range(0.0, 25.0));
+
+    app.add_subcommand("grayscale",
+    	"Averages the colors of an image to make it grayscale");
+
+    app.add_subcommand("invert",
+    	"Inverts the colors of the image");
+
+    app.add_subcommand("sepia",
+    	"Adds a warm brown tone to the image");
+
+    app.add_subcommand("color",
+    "Replaces all existing color with the corresponding shades of a new color");
+	string color_hex{"000000"};
+	app.get_subcommand("color")->add_option("--hex", color_hex,
+		"The desired color as a hexidecimal value");
+
+    app.add_subcommand("enable-channels",
+    "Specify channels to enable in an image");
+	int red_channel_enabled{0};
+	int green_channel_enabled{0};
+	int blue_channel_enabled{0};
+	app.get_subcommand("enable-channels")->add_flag("-r,--red", red_channel_enabled,
+	"Whether to enable the red channel");
+	app.get_subcommand("enable-channels")->add_flag("-g,--green", green_channel_enabled,
+	"Whether to enable the green channel");
+	app.get_subcommand("enable-channels")->add_flag("-b,--blue", blue_channel_enabled,
+		"Whether to enable the blue channel");
+
+
+
+	// Parse options
+	CLI11_PARSE(app, argc, argv);
+
+
 
 	// Read image
-	ImageMatrix* image = read_image(ref_path, width, height, bpp);
+	const ImageMatrix* image = read_image(ref_path, width, height, bpp);
+
 	// Print read image confirmation message
 	cout << "Finished reading reference image." << endl;
 
-	// Go through parsed image functions
-	for (auto it = vm.begin(); it != vm.end(); ++it) {
-		ImageMatrix* temp;
-		string key = it->first;
-		if (key == "pixelate") {
-			temp = pixelate(*image, vm["pixelate"].as<int>());
-		}
-		else if (key == "outline") {
-			temp = outline(*image);
-		}
-		else if (key == "sharpen") {
-			temp = sharpen(*image);
-		}
-		else if (key == "box-blur") {
-			temp = box_blur(*image, vm["box-blur"].as<int>());
-		}
-		else if (key == "gaussian-blur") {
-			temp = gaussian_blur(*image, vm["gaussian-blur"].as<int>());
-		}
-		else if (key == "grayscale") {
-			temp = grayscale(*image);
-		}
-		else if (key == "invert") {
-			temp = invert(*image);
-		}
-		else if (key == "sepia") {
-			temp = sepia(*image);
-		}
-		else if (key == "color") {
-			const string hex = vm["color"].as<string>();
-			temp = color(*image, hex);
-		}
-		else if (key == "enable-channels") {
-			const string channels = vm["enable-channels"].as<string>();
-			const bool r = channels.find('r') != string::npos;
-			const bool g = channels.find('g') != string::npos;
-			const bool b = channels.find('b') != string::npos;
-			temp = enable_channels(*image, r, g, b);
-		}
-		else {
-			cout << "Please include a valid image function" << endl;
-			exit(1);
-		}
-		delete image;
-		image = temp;
-	}
+
+
+	// Perform functions
+    for (const auto *subcom : app.get_subcommands()) {
+        ImageMatrix* temp;
+        string key = subcom->get_name();
+
+        if (key == "pixelate") {
+            temp = pixelate(*image,
+            	pixelate_divs);
+        }
+
+        else if (key == "outline") {
+            temp = outline(*image);
+        }
+
+        else if (key == "sharpen") {
+            temp = sharpen(*image);
+        }
+
+        else if (key == "box-blur") {
+            temp = box_blur(*image,
+            box_blur_radius);
+        }
+
+        else if (key == "gaussian-blur") {
+            temp = gaussian_blur(*image,
+            gaussian_blur_radius,
+            gaussian_blur_sigma);
+        }
+
+        else if (key == "grayscale") {
+            temp = grayscale(*image);
+        }
+
+        else if (key == "invert") {
+            temp = invert(*image);
+        }
+
+        else if (key == "sepia") {
+            temp = sepia(*image);
+        }
+
+        else if (key == "color") {
+            temp = color(*image,
+            	color_hex);
+        }
+
+        else if (key == "enable-channels") {
+            temp = enable_channels(*image,
+            	red_channel_enabled > 0,
+            	green_channel_enabled > 0,
+            	blue_channel_enabled > 0);
+        }
+        else {
+    		cout << "Could not find valid image processing function command." << endl;
+    		exit(1);
+    	}
+
+        delete image;
+        image = temp;
+    }
+
+
 
 	// Write the output image
 	write_image(out_path, *image);
+
+	// Delete image
+	delete image;
+
 	// Print completion confirmation message
 	cout << "Finished writing output image." << endl;
 

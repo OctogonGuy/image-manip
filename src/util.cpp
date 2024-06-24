@@ -39,6 +39,17 @@ ImageMatrix::ImageMatrix(std::uint8_t* image_data, const int& width, const int& 
 }
 
 
+ImageMatrix::ImageMatrix(const ImageMatrix& image) {
+    ImageMatrix(width, height, bpp);
+    for (int i = 0; i < getHeight(); i++) {
+        for (int j = 0; j < getWidth(); j++) {
+            PixelVector pixel_data = image.get(i, j);
+            set(i, j, pixel_data);
+        }
+    }
+}
+
+
 ImageMatrix::~ImageMatrix() {
     delete[] image_data;
     image_data = nullptr;
@@ -117,9 +128,9 @@ ImageMatrix* ImageMatrix::convolve(const double* kernel, const size_t& kernel_si
                     b_total += pixel_data.b * kernel_entry * scalar;
                 }
             }
-            const uint8_t r = static_cast<uint8_t>(max(0.0, min(255.0, round(r_total))));
-            const uint8_t g = static_cast<uint8_t>(max(0.0, min(255.0, round(g_total))));
-            const uint8_t b = static_cast<uint8_t>(max(0.0, min(255.0, round(b_total))));
+            const uint8_t r = static_cast<uint8_t>(round(min(255.0, max(0.0, r_total))));
+            const uint8_t g = static_cast<uint8_t>(round(min(255.0, max(0.0, g_total))));
+            const uint8_t b = static_cast<uint8_t>(round(min(255.0, max(0.0, b_total))));
             new_image->set(i, j, PixelVector(r, g, b));
         }
     }
