@@ -91,4 +91,12 @@ ImageMatrix* enable_channels(const ImageMatrix& image, const bool& r_on, const b
 ImageMatrix* color(const ImageMatrix& image, const std::string& hex);
 
 
+/**
+ * Shifts the colors to mix of blue and orange tones
+ * @param image The image
+ * @return The output image
+ */
+ImageMatrix* octopus_dragon(const ImageMatrix& image);
+
+
 #endif

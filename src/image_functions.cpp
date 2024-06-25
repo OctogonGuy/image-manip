@@ -172,3 +172,13 @@ ImageMatrix* color(const ImageMatrix& image, const string& hex) {
 	};
 	return image.filter(matrix);
 }
+
+
+ImageMatrix* octopus_dragon(const ImageMatrix& image) {
+	constexpr double matrix[] = {
+		0.807,	0.162,	0.039,	0,
+		0.119,	0.194,	0.633,	0,
+		0.0,	0.050,	0.900,	0
+	};
+	return image.filter(matrix);
+}

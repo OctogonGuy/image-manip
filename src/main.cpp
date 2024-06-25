@@ -101,6 +101,9 @@ int process_commands(int argc, char** argv) {
 	app.get_subcommand("enable-channels")->add_flag("-b,--blue", blue_channel_enabled,
 	"Whether to enable the blue channel");
 
+	app.add_subcommand("octopus-dragon",
+	"Shifts the colors to mix of blue and orange tones");
+
 
 	// --- Parse commands ---
 	CLI11_PARSE(app, argc, argv);
@@ -163,6 +166,10 @@ int process_commands(int argc, char** argv) {
 				red_channel_enabled > 0,
 				green_channel_enabled > 0,
 				blue_channel_enabled > 0);
+		}
+
+		else if (key == "octopus-dragon") {
+			temp = octopus_dragon(*image);
 		}
 
 		else {
