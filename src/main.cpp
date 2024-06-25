@@ -6,30 +6,44 @@
 using namespace std;
 
 
+
+/**
+ * Adds commands and their respective options to the command line application Then,
+ * parses commands given by the user, reads the reference image, executes the
+ * corresponding function(s), and writes the output image.
+ * @param argc The number of command line arguments
+ * @param argv The command line arguments
+ * @return Exit code
+ */
+int process_commands(int argc, char** argv);
+
+
+
 int main(int argc, char** argv) {
+	return process_commands(argc, argv);
+}
+
+
+
+int process_commands(int argc, char** argv) {
 	int width, height, bpp;
 	string ref_path, out_path;
 
 
-
 	// Initialize CLI App
-    CLI::App app{"App description"};
-	app.require_subcommand();
+	CLI::App app{"App description"};
 	argv = app.ensure_utf8(argv);
+	app.require_subcommand();
 
 
-
-	// --- Options for whole program ---
-
+	// Add app options that are applicable to all functions
 	app.add_option("--ref", ref_path,
 		"Reference image path")->required();
 	app.add_option("--out", out_path,
-		"Output image path")->required();
-
+	"Output image path")->required();
 
 
 	// --- Commands and their respective options ---
-
     app.add_subcommand("pixelate",
     	"Transforms an image into a pixelated version");
 	int pixelate_divs{100};
@@ -85,84 +99,80 @@ int main(int argc, char** argv) {
 	app.get_subcommand("enable-channels")->add_flag("-g,--green", green_channel_enabled,
 	"Whether to enable the green channel");
 	app.get_subcommand("enable-channels")->add_flag("-b,--blue", blue_channel_enabled,
-		"Whether to enable the blue channel");
+	"Whether to enable the blue channel");
 
 
-
-	// Parse options
+	// --- Parse commands ---
 	CLI11_PARSE(app, argc, argv);
-
 
 
 	// Read image
 	const ImageMatrix* image = read_image(ref_path, width, height, bpp);
-
 	// Print read image confirmation message
 	cout << "Finished reading reference image." << endl;
 
 
+	// --- Perform functions ---
+	for (const auto *subcom : app.get_subcommands()) {
+		ImageMatrix* temp;
+		string key = subcom->get_name();
 
-	// Perform functions
-    for (const auto *subcom : app.get_subcommands()) {
-        ImageMatrix* temp;
-        string key = subcom->get_name();
+		if (key == "pixelate") {
+			temp = pixelate(*image,
+				pixelate_divs);
+		}
 
-        if (key == "pixelate") {
-            temp = pixelate(*image,
-            	pixelate_divs);
-        }
+		else if (key == "outline") {
+			temp = outline(*image);
+		}
 
-        else if (key == "outline") {
-            temp = outline(*image);
-        }
+		else if (key == "sharpen") {
+			temp = sharpen(*image);
+		}
 
-        else if (key == "sharpen") {
-            temp = sharpen(*image);
-        }
+		else if (key == "box-blur") {
+			temp = box_blur(*image,
+			box_blur_radius);
+		}
 
-        else if (key == "box-blur") {
-            temp = box_blur(*image,
-            box_blur_radius);
-        }
+		else if (key == "gaussian-blur") {
+			temp = gaussian_blur(*image,
+			gaussian_blur_radius,
+			gaussian_blur_sigma);
+		}
 
-        else if (key == "gaussian-blur") {
-            temp = gaussian_blur(*image,
-            gaussian_blur_radius,
-            gaussian_blur_sigma);
-        }
+		else if (key == "grayscale") {
+			temp = grayscale(*image);
+		}
 
-        else if (key == "grayscale") {
-            temp = grayscale(*image);
-        }
+		else if (key == "invert") {
+			temp = invert(*image);
+		}
 
-        else if (key == "invert") {
-            temp = invert(*image);
-        }
+		else if (key == "sepia") {
+			temp = sepia(*image);
+		}
 
-        else if (key == "sepia") {
-            temp = sepia(*image);
-        }
+		else if (key == "color") {
+			temp = color(*image,
+				color_hex);
+		}
 
-        else if (key == "color") {
-            temp = color(*image,
-            	color_hex);
-        }
+		else if (key == "enable-channels") {
+			temp = enable_channels(*image,
+				red_channel_enabled > 0,
+				green_channel_enabled > 0,
+				blue_channel_enabled > 0);
+		}
 
-        else if (key == "enable-channels") {
-            temp = enable_channels(*image,
-            	red_channel_enabled > 0,
-            	green_channel_enabled > 0,
-            	blue_channel_enabled > 0);
-        }
-        else {
-    		cout << "Could not find valid image processing function command." << endl;
-    		exit(1);
-    	}
+		else {
+			cout << "Could not find valid image processing function command." << endl;
+			exit(1);
+		}
 
-        delete image;
-        image = temp;
-    }
-
+		delete image;
+		image = temp;
+	}
 
 
 	// Write the output image
