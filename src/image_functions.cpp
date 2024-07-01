@@ -1,8 +1,10 @@
 #include "image_functions.h"
 #include <iostream>
 #include <cstdint>
-#include <cmath>
 #include <sstream>
+#include <vector>
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 #include "util.h"
 using namespace std;
@@ -150,16 +152,15 @@ ImageMatrix* sharpen(const ImageMatrix& image) {
 
 ImageMatrix* box_blur(const ImageMatrix& image, const int& radius) {
 	const int kernel_size = static_cast<int>(pow(2 * radius + 1, 2));
-	double kernel[kernel_size];
-	fill_n(kernel, kernel_size, 1);
-	return image.convolve(kernel, kernel_size, 1.0/kernel_size);
+	vector<double> kernel(kernel_size, 1);
+	return image.convolve(&kernel[0], kernel_size, 1.0/kernel_size);
 }
 
 
 ImageMatrix* gaussian_blur(const ImageMatrix& image, const int& radius, const double& sigma) {
 	const int kernel_size = static_cast<int>(pow(2 * radius + 1, 2));
 	const int kernel_rows = 2*radius + 1;
-	double kernel[kernel_size];
+	vector<double> kernel(kernel_size, 0);
 	for (int i = -radius; i <= radius; i++) {
 		for (int j = -radius; j <= radius; j++) {
 			const int index = (i + radius) * kernel_rows + (j + radius);
@@ -171,7 +172,7 @@ ImageMatrix* gaussian_blur(const ImageMatrix& image, const int& radius, const do
 	for (int i = 0; i < kernel_size; i++) {
 		sum += kernel[i];
 	}
-	return image.convolve(kernel, kernel_size, 1.0/sum);
+	return image.convolve(&kernel[0], kernel_size, 1.0/sum);
 }
 
 
