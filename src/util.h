@@ -126,4 +126,12 @@ ImageMatrix* read_image(const std::string& ref_path, int& width, int& height, in
 */
 void write_image(const std::string& out_path, const ImageMatrix& new_image);
 
+
+/**
+ * Writes a text file
+ * @param out_path The destination path for the text file
+ * @param text The text to write to the file
+*/
+void write_textfile(const std::string& out_path, const std::string& text);
+
 #endif

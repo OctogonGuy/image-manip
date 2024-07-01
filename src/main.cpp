@@ -48,7 +48,13 @@ int process_commands(int argc, char** argv) {
     	"Transforms an image into a pixelated version");
 	int pixelate_divs{100};
     app.get_subcommand("pixelate")->add_option("--divs", pixelate_divs,
-        "description");
+    "The number of times the image will be divided on the longest side");
+
+	app.add_subcommand("ascii",
+		"Transforms an image into ASCII art");
+	int ascii_cols{80};
+	app.get_subcommand("ascii")->add_option("--cols", ascii_cols,
+		"The number of characters along the width");
 
     app.add_subcommand("outline",
     	"Highlights large differences in pixel values");
@@ -123,6 +129,19 @@ int process_commands(int argc, char** argv) {
 		if (key == "pixelate") {
 			temp = pixelate(*image,
 				pixelate_divs);
+		}
+
+		else if (key == "ascii") {
+			const string ascii_str = ascii(*image, ascii_cols);
+			write_textfile(out_path, ascii_str);
+			// Delete image
+			delete image;
+			// Print the ASCII art
+			cout << ascii_str << endl;
+			// Print completion confirmation message
+			cout << "Finished writing output text file. Cannot perform further operations" << endl;
+			// Exit program
+			return 0;
 		}
 
 		else if (key == "outline") {

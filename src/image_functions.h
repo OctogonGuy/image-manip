@@ -13,6 +13,15 @@ ImageMatrix* pixelate(const ImageMatrix& image, const int& divs);
 
 
 /**
+ * Transforms an image into ASCII art
+ * @param image The image
+ * @param cols The number of characters along the width
+ * @return The output text
+ */
+std::string ascii(const ImageMatrix& image, const int& cols);
+
+
+/**
  * Highlights large differences in pixel values
  * @param image The image
  * @return The output image

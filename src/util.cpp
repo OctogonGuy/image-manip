@@ -192,3 +192,11 @@ void write_image(const string& out_path, const ImageMatrix& new_image) {
     else if (boost::iequals(ext, "jpg") || boost::iequals(ext, "jpeg"))
         stbi_write_jpg(out_path.c_str(), width, height, bpp, image_data, QUALITY);
 }
+
+
+void write_textfile(const std::string& out_path, const std::string& text) {
+    ofstream file;
+    file.open(out_path);
+    file << text;
+    file.close();
+}
