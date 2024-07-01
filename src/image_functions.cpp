@@ -1,10 +1,10 @@
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include "image_functions.h"
 #include <iostream>
 #include <cstdint>
 #include <sstream>
 #include <vector>
-#define _USE_MATH_DEFINES
-#include <cmath>
 
 #include "util.h"
 using namespace std;
