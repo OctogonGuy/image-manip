@@ -134,4 +134,22 @@ void write_image(const std::string& out_path, const ImageMatrix& new_image);
 */
 void write_textfile(const std::string& out_path, const std::string& text);
 
+
+/**
+ * Compares two characters, ignoring case
+ * @param a The first character
+ * @param b The second character
+ * @return Whether the characters are equal
+ */
+bool ichar_equals(char a, char b);
+
+
+/**
+ * Compares two strings, ignoring case
+ * @param a The first string
+ * @param b The second string
+ * @return Whether the strings are equal
+ */
+bool iequals(const std::string& a, const std::string& b);
+
 #endif

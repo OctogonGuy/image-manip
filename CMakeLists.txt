@@ -3,9 +3,6 @@ project(Image_Processor)
 
 set(CMAKE_CXX_STANDARD 11)
 
-find_package(Boost 1.66.0 REQUIRED)
-INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIRS} )
-
 add_executable(Image_Processor src/main.cpp
         src/util.cpp
         src/util.h
@@ -13,6 +10,3 @@ add_executable(Image_Processor src/main.cpp
         src/image_functions.h
 )
 include_directories(Image_Manipulator, lib)
-
-TARGET_LINK_LIBRARIES( Image_Processor LINK_PUBLIC ${Boost_LIBRARIES} )
-target_link_libraries(Image_Processor PRIVATE Boost::headers)

@@ -3,7 +3,8 @@
 #include <cstdint>
 #include <regex>
 #include <fstream>
-#include <boost/algorithm/string.hpp>
+#include <cctype>
+#include <algorithm>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -143,7 +144,7 @@ ImageMatrix* read_image(const string& ref_path, int& width, int& height, int& bp
     const string ext = ref_path.substr(ref_path.find_last_of('.') + 1);
     bool invalid_file = true;
     for (const string& valid_ext : valid_exts) {
-        if (boost::iequals(ext, valid_ext)) {
+        if (iequals(ext, valid_ext)) {
             invalid_file = false;
             break;
         }
@@ -185,11 +186,11 @@ void write_image(const string& out_path, const ImageMatrix& new_image) {
     const int width = new_image.getWidth();
     const int height = new_image.getHeight();
     const int bpp = new_image.getBpp();
-    if (boost::iequals(ext, "png"))
+    if (iequals(ext, "png"))
         stbi_write_png(out_path.c_str(), width, height, bpp, image_data, width * bpp);
-    else if (boost::iequals(ext, "bmp"))
+    else if (iequals(ext, "bmp"))
         stbi_write_bmp(out_path.c_str(), width, height, bpp, image_data);
-    else if (boost::iequals(ext, "jpg") || boost::iequals(ext, "jpeg"))
+    else if (iequals(ext, "jpg") || iequals(ext, "jpeg"))
         stbi_write_jpg(out_path.c_str(), width, height, bpp, image_data, QUALITY);
 }
 
@@ -199,4 +200,18 @@ void write_textfile(const std::string& out_path, const std::string& text) {
     file.open(out_path);
     file << text;
     file.close();
+}
+
+
+bool ichar_equals(char a, char b)
+{
+    return std::tolower(static_cast<unsigned char>(a)) ==
+           std::tolower(static_cast<unsigned char>(b));
+}
+
+
+bool iequals(const std::string& a, const std::string& b)
+{
+    return a.size() == b.size() &&
+           std::equal(a.begin(), a.end(), b.begin(), ichar_equals);
 }
