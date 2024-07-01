@@ -74,7 +74,7 @@ ImageMatrix* pixelate(const ImageMatrix& image, const int& divs) {
 }
 
 
-string ascii(const ImageMatrix& image, const int& cols) {
+string ascii(const ImageMatrix& image, const int& cols, const double& ratio) {
 	const int width = image.getWidth();
 	const int height = image.getHeight();
 	const int bpp = image.getBpp();
@@ -82,7 +82,7 @@ string ascii(const ImageMatrix& image, const int& cols) {
 	// Determine new image info
 	const double chunk_width = static_cast<double>(width) / cols;	// Divisions on the width
 	const int chunks = max(1, static_cast<int>(round(width / chunk_width) * round(height / chunk_width)));
-	const int rows = max(1, static_cast<int>(round(height / chunk_width / 2)));	// / 2 b/c font ratio is tall
+	const int rows = max(1, static_cast<int>(round(height / chunk_width / ratio)));
 	const double chunk_height = static_cast<double>(height) / rows;
 
 	// Create bit data for new image

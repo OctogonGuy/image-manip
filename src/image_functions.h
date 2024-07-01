@@ -16,9 +16,10 @@ ImageMatrix* pixelate(const ImageMatrix& image, const int& divs);
  * Transforms an image into ASCII art
  * @param image The image
  * @param cols The number of characters along the width
+ * @param ratio The width/height ratio to stretch the image by
  * @return The output text
  */
-std::string ascii(const ImageMatrix& image, const int& cols);
+std::string ascii(const ImageMatrix& image, const int& cols, const double& ratio);
 
 
 /**
