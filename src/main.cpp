@@ -60,7 +60,14 @@ int process_commands(int argc, char** argv) {
     	"Highlights large differences in pixel values");
 
 	app.add_subcommand("sharpen",
-		"Emphasizes differences in adjacent pixel values");
+	"Emphasizes differences in adjacent pixel values");
+
+	app.add_subcommand("contrast",
+		"Controls the amount of color differentiation");
+	int contrast_value{0};
+	app.get_subcommand("contrast")->add_option("--value", contrast_value,
+		"the contrast value (-255 - 255)")
+	->check(CLI::Range(-255, 255));
 
     app.add_subcommand("box-blur",
 		"Averages each pixel's value with the value of its neighboring pixels");
@@ -150,6 +157,12 @@ int process_commands(int argc, char** argv) {
 
 		else if (key == "sharpen") {
 			temp = sharpen(*image);
+		}
+
+		else if (key == "contrast") {
+			cout << contrast_value;
+			temp = contrast(*image,
+				contrast_value);
 		}
 
 		else if (key == "box-blur") {

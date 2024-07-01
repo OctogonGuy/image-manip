@@ -38,6 +38,15 @@ ImageMatrix* sharpen(const ImageMatrix& image);
 
 
 /**
+ * Controls the amount of color differentiation
+ * @param image The image
+ * @param value The contrast value (-255 - 255)
+ * @return The output image
+ */
+ImageMatrix* contrast(const ImageMatrix& image, const int& value);
+
+
+/**
  * Averages each pixel's value with the value of its neighboring pixels
  * @param image The image
  * @param radius 2 * radius + 1 = Width and height of the kernel

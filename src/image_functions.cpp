@@ -150,6 +150,17 @@ ImageMatrix* sharpen(const ImageMatrix& image) {
 }
 
 
+ImageMatrix* contrast(const ImageMatrix& image, const int& value) {
+	const double factor = (259.0 * (value + 255)) / (255 * (259 - value));
+	const double matrix[] = {
+		factor,	0,		0,		128 - factor*128,
+		0,		factor,	0,		128 - factor*128,
+		0,		0,		factor,	128 - factor*128
+	};
+	return image.filter(matrix);
+}
+
+
 ImageMatrix* box_blur(const ImageMatrix& image, const int& radius) {
 	const int kernel_size = static_cast<int>(pow(2 * radius + 1, 2));
 	vector<double> kernel(kernel_size, 1);
